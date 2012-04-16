@@ -1,6 +1,6 @@
 # Marlinespike
 
-A very simple but powerful static site generator.
+A very simple _(but hopefully soon powerful)_ static site generator.
 
 ## Why the name?
 
