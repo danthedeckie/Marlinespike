@@ -10,6 +10,17 @@ stick which is used to seporate strands of rope, give extra purchase or grip
 while hauling on some line or other, fighting off pirates, and generally 
 anything else which you can think of for it.
 
+## Why bother?
+
+I have been using Jekyll - but I don't much like ruby, and prefer to keep
+all our projects python rather than bring yet another language in to it.
+
+Also, it's fun.
+
+Also, Jekyll seems (to me) to be quite a bit complex beast, wheras I think this
+ought to be a reasonably simple project.  Almost everything already exists as
+libraries.
+
 ## Status:
 
-Work in Progress.
+Just started.  Not yet functional, but possibly interesting.
