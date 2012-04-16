@@ -1,5 +1,6 @@
 ---
 title: Index page
+template: basic
 tags: [main, etc]
 ---
 # Welcome!

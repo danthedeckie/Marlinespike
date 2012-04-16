@@ -1,17 +1,26 @@
+import os.path
+import re
 import pystache
 import markdown2
+import shutil
+
 
 def echo_filename(filename, context):
-    print 'ECHO!:'
+    print os.path.join(context['_output_dir'], filename)
     print filename
+
+def copy_file(filename, context):
+    shutil.copy2(filename, os.path.join(context['_output_dir'], filename))
 
 def mustache_handler(filename, context):
     print 'MUSTACHE!:'
     print filename
+    print context['_output_basename'] + '.html'
 
 def markdown_handler(filename, context):
     print 'Markdown:'
     print filename
+    print context['_output_basename'] + '.html'
 
 ###########
 # For pystache/markdown files:
@@ -28,8 +37,9 @@ link_patterns = [
     (re.compile(r"(\b[A-Z][a-z]+[A-Z]\w+\b)"), r"/\1")
     ]
 
+markdown_renderer = pystache.Renderer()
 
-def markdown_handler(filename, context):
+def new_markdown_handler(filename, context):
     # So we don't pollute our mutable friend:
     my_context = context.copy()
 
@@ -39,7 +49,6 @@ def markdown_handler(filename, context):
 
     # These before metadata, so they're overridable.
     my_context['body'] = unicode(m)
-    my_context['_filename'] = os.path.splitext(os.path.basename(filename))[0]
     my_context['_original_filename'] = filename
 
     # Load metadata - this is messy to cope with [items,with,lists]
@@ -48,7 +57,8 @@ def markdown_handler(filename, context):
                 [{'item':x.strip()} for x in val[1:-1].split(',')] \
             if val[0] == '[' else val
 
-    with open(os.path.join(my_context['output_dir'], my_context['_filename'] + '.html'),'w') as f:
-        f.write(pystache.render(my_context['template'], my_context, partials=my_context['templates']))
-
+    with open(context['_output_basename'] + '.html','w') as f:
+        f.write(pystache.render(my_context['template'], 
+                                my_context, 
+                                search_dirs=my_context['_template_dir']))
 
