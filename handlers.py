@@ -3,7 +3,7 @@ import re
 import pystache
 import markdown2
 import shutil
-
+from useful import *
 
 def echo_filename(filename, context):
     print os.path.join(context['_output_dir'], filename)
@@ -45,38 +45,37 @@ def _get_template(name, context):
     if name in _markdown_templates:
         return _markdown_templates[name]
     else:
-        # if exists?! TODO
-        if True:
-            # TODO - some kind of minify metadata? or alternate option for {{{body}}} in template?
-            with open(os.path.join(context['_template_dir'],name + context['_template_extn'])) as f:
-                new_template = markdown2.markdown(f.read(), extras=['metadata'])
+        if os.path.isfile(os.path.join(context['_template_dir'], name + context['_template_extn'])):
+            new_template, template_metadata = readfile_with_jsonheader( \
+                    os.path.join(context['_template_dir'], \
+                    name + context['_template_extn']))
 
-            if 'template' in new_template.metadata:
-                replace_string = new_template.metadata['template_replace'] \
-                        if 'template_replace' in new_template.metadata \
-                        else '{{{body}}}'
-                parent_template = _get_template(new_template.metadata['template'],context)
+            if 'template' in template_metadata:
+                replace_string = template_metadata.get('template_replace','{{{ body }}}')
+                parent_template = _get_template(template_metadata['template'],context)
                 new_template = parent_template.replace(replace_string, new_template)
-            _markdown_templates[name] = new_template # TODO? strip metadata?
+            _markdown_templates[name] = new_template 
             return new_template
         else:
-            # Dunno if this is a good idea...
-            return '{{{body}}}'
+            raise RuntimeError('template "' + name + '" not found.')
 
 
 def markdown_handler(filename, context):
-    # So we don't pollute our mutable friend:
-    my_context = context.copy()
 
     # TODO - try/finally etc.
-    with open(filename,'r') as f:
-        m = markdown2.markdown(f.read(), extras=['metadata'], link_patterns=link_patterns)
+    text, metadata = readfile_with_jsonheader(filename)
+    
+    # So we don't polute our mutable friend:
+    my_context = dict(context.items() + metadata.items())
+
+    m = markdown2.markdown(text, extras=['metadata'], link_patterns=link_patterns)
 
     # These before metadata, so they're overridable.
     my_context['body'] = unicode(m)
     my_context['_original_filename'] = filename
 
     # Load metadata - this is messy to cope with [items,with,lists]
+    # TODO: remove this and recommend JSON metadata?
     for key,val in m.metadata.iteritems():
         my_context[key] = \
                 [{'item':x.strip()} for x in val[1:-1].split(',')] \

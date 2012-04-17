@@ -5,7 +5,7 @@ import json
 from glob import glob
 # Internal stuff
 import handlers
-
+from useful import *
 
 ################################
 # Default Settings
@@ -90,7 +90,7 @@ def do_dir(where, previous_context):
 
     context['_output_dir'] = context.pop('_output_dir', os.path.join(context['_parent_output_dir'], where))
 
-    if not os.path.exists('_config.py'):
+    if os.path.exists('_config.py'):
         execfile('_config.py')
 
     if not os.path.exists(context['_output_dir']):
