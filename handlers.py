@@ -17,7 +17,7 @@ def mustache_handler(filename, context):
     print filename
     print context['_output_basename'] + '.html'
 
-def markdown_handler(filename, context):
+def old_markdown_handler(filename, context):
     print 'Markdown:'
     print filename
     print context['_output_basename'] + '.html'
@@ -37,9 +37,34 @@ link_patterns = [
     (re.compile(r"(\b[A-Z][a-z]+[A-Z]\w+\b)"), r"/\1")
     ]
 
-markdown_renderer = pystache.Renderer()
+_markdown_renderer = pystache.Renderer()
+_markdown_templates = {}
 
-def new_markdown_handler(filename, context):
+
+def _get_template(name, context):
+    if name in _markdown_templates:
+        return _markdown_templates[name]
+    else:
+        # if exists?! TODO
+        if True:
+            # TODO - some kind of minify metadata? or alternate option for {{{body}}} in template?
+            with open(os.path.join(context['_template_dir'],name + context['_template_extn'])) as f:
+                new_template = markdown2.markdown(f.read(), extras=['metadata'])
+
+            if 'template' in new_template.metadata:
+                replace_string = new_template.metadata['template_replace'] \
+                        if 'template_replace' in new_template.metadata \
+                        else '{{{body}}}'
+                parent_template = _get_template(new_template.metadata['template'],context)
+                new_template = parent_template.replace(replace_string, new_template)
+            _markdown_templates[name] = new_template # TODO? strip metadata?
+            return new_template
+        else:
+            # Dunno if this is a good idea...
+            return '{{{body}}}'
+
+
+def markdown_handler(filename, context):
     # So we don't pollute our mutable friend:
     my_context = context.copy()
 
@@ -58,7 +83,5 @@ def new_markdown_handler(filename, context):
             if val[0] == '[' else val
 
     with open(context['_output_basename'] + '.html','w') as f:
-        f.write(pystache.render(my_context['template'], 
-                                my_context, 
-                                search_dirs=my_context['_template_dir']))
+        f.write(pystache.render(_get_template(my_context['template'], my_context), my_context ))
 

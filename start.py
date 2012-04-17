@@ -27,6 +27,7 @@ _DEFAULT_CONFIG = {
         '_file_handlers':_FILE_HANDLERS,
         '_output_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'site'),
         '_template_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'templates'),
+        '_template_extn': '.html',
         '_parent_output_dir': getcwd(),
         '_base_dir': getcwd()
         }
