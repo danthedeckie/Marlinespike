@@ -90,7 +90,8 @@ def do_dir(where, previous_context):
 
     context['_output_dir'] = context.pop('_output_dir', os.path.join(context['_parent_output_dir'], where))
 
-    print 'output_dir:' + context['_output_dir']
+    if not os.path.exists('_config.py'):
+        execfile('_config.py')
 
     if not os.path.exists(context['_output_dir']):
         os.makedirs(context['_output_dir'])
