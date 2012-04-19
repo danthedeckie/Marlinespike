@@ -2,7 +2,6 @@ def image_magick(filename, context):
     if not 'image_magick' in context:
         return handlers.copy_file(filename, context)
 
-    print "hi"
     for conversion in context['image_magick']:
         outputdir = os.path.join(context['_output_dir'], conversion['destination'])
 

@@ -23,4 +23,7 @@ libraries.
 
 ## Status:
 
-Just started.  Not yet functional, but possibly interesting.
+Basics are working, most of our next generation site is working with this now,
+still a lot of cleaning up and polishing needed before 'production ready'.
+
+
