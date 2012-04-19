@@ -1,9 +1,19 @@
 #!/opt/local/bin/python
+# -*- coding: utf-8 -*-
+import sys                       # For UTF-8 settings.
+reload(sys)                      # Stupid hack to re-apply UTF-8 if it
+                                 #    wasn't loaded originally.
+sys.setdefaultencoding('utf-8')  #    Oh for Py3k everywhere.
+
+
 # External Libs
 from os import chdir, listdir, getcwd 
 import os.path
 import json
 from glob import glob
+import subprocess # needed for most plugins.
+import copy
+
 # Internal stuff
 import handlers
 from useful import *
@@ -15,7 +25,6 @@ from useful import *
 _FILE_HANDLERS = {
     ('.markdown','.md'): handlers.markdown_handler,
                   '.js': handlers.copy_file,
-                '.less': handlers.less_handler,
                    None: handlers.copy_file # Default
     }
 
@@ -48,17 +57,17 @@ def exclude_test(filename):
 
 def do_config(where, previous_context):
     if not os.path.exists(previous_context['_configfile_name']):
-        return previous_context.copy()
+        return copy.deepcopy(previous_context)
 
     with open(previous_context['_configfile_name']) as f:
-        return dict(previous_context.items() + json.load(f).items())
+        return dict(copy.deepcopy(previous_context).items() + json.load(f).items())
 
 
 def do_file(filename, context):
     root, ext = os.path.splitext(filename)
     context['_output_basename'] = os.path.join(context['_output_dir'], root)
     context['_input_extension'] = ext
-
+    print filename
     ff = context['_file_handlers']
     ff[endswithwhich(filename, ff.keys())](filename, context)
 

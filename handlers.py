@@ -8,7 +8,6 @@ from useful import *
 
 def echo_filename(filename, context):
     print os.path.join(context['_output_dir'], filename)
-    print filename
 
 def copy_file(filename, context):
     shutil.copy2(filename, os.path.join(context['_output_dir'], filename))
