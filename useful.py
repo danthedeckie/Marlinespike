@@ -17,7 +17,7 @@ def endswithwhich(search_in, suffixes):
     elif type(suffixes) is str:
         return suffixes if search_in.endswith(suffixes) else None
     return None
-
+    
 
 def readfile_with_jsonheader(filename):
     """ Load a (text) file, and if it starts with '-j-', parse until '\n---\n'
@@ -45,8 +45,4 @@ def readfile_with_jsonheader(filename):
             f.seek(0)
         return (f.read(), context)
 
-if __name__ == '__main__':
-    data, context = readfile_with_jsonheader('inner.html')
-    print "data:" + data.__str__()
-    print "context:" + context.__str__()
 

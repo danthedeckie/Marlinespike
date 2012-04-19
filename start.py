@@ -1,3 +1,4 @@
+#!/opt/local/bin/python
 # External Libs
 from os import chdir, listdir, getcwd 
 import os.path
@@ -12,9 +13,9 @@ from useful import *
 ################################
 
 _FILE_HANDLERS = {
-            '.mustache': handlers.mustache_handler,
     ('.markdown','.md'): handlers.markdown_handler,
                   '.js': handlers.copy_file,
+                '.less': handlers.less_handler,
                    None: handlers.copy_file # Default
     }
 
@@ -31,25 +32,6 @@ _DEFAULT_CONFIG = {
         '_parent_output_dir': getcwd(),
         '_base_dir': getcwd()
         }
-
-################################
-# Generic Functions
-################################
-
-def endswithwhich(search_in, suffixes):
-    """ Takes a string and a list of suffixes to test against.
-        Returns either the suffix at the end of search_in, or
-        else None.  If you give a string as suffixes, it also
-        works. Within the list, you can have tuples of multiple
-        options too. """
-    if type(suffixes) is list:
-        for suffix in filter(lambda x:x, suffixes):
-            if search_in.endswith(suffix):
-                return suffix
-    elif type(suffixes) is str:
-        return suffixes if search_in.endswith(suffixes) else None
-    return None
-
 
 ##############################
 # Function helpers
@@ -82,6 +64,7 @@ def do_file(filename, context):
 
     del(context['_output_basename'])
     del(context['_input_extension'])
+
 
 def do_dir(where, previous_context):
     return_to = getcwd()

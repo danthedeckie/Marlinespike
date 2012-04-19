@@ -3,6 +3,7 @@ import re
 import pystache
 import markdown2
 import shutil
+import subprocess # for external commands.
 from useful import *
 
 def echo_filename(filename, context):
@@ -12,15 +13,10 @@ def echo_filename(filename, context):
 def copy_file(filename, context):
     shutil.copy2(filename, os.path.join(context['_output_dir'], filename))
 
-def mustache_handler(filename, context):
-    print 'MUSTACHE!:'
-    print filename
-    print context['_output_basename'] + '.html'
+def less_handler(filename, context):
+    with open(context['_output_basename'] + '.css','w') as f:
+        subprocess.call(['lessc', filename], stdout=f)
 
-def old_markdown_handler(filename, context):
-    print 'Markdown:'
-    print filename
-    print context['_output_basename'] + '.html'
 
 ###########
 # For pystache/markdown files:
@@ -40,24 +36,23 @@ link_patterns = [
 _markdown_renderer = pystache.Renderer()
 _markdown_templates = {}
 
-
 def _get_template(name, context):
-    if name in _markdown_templates:
-        return _markdown_templates[name]
+    filename = os.path.join(context['_template_dir'], name + context['_template_extn'])
+
+    if filename in _markdown_templates:
+        return _markdown_templates[filename]
     else:
-        if os.path.isfile(os.path.join(context['_template_dir'], name + context['_template_extn'])):
-            new_template, template_metadata = readfile_with_jsonheader( \
-                    os.path.join(context['_template_dir'], \
-                    name + context['_template_extn']))
+        if os.path.isfile(filename):
+            new_template, template_metadata = readfile_with_jsonheader(filename)
 
             if 'template' in template_metadata:
                 replace_string = template_metadata.get('template_replace','{{{ body }}}')
                 parent_template = _get_template(template_metadata['template'],context)
                 new_template = parent_template.replace(replace_string, new_template)
-            _markdown_templates[name] = new_template 
+            _markdown_templates[filename] = new_template 
             return new_template
         else:
-            raise RuntimeError('template "' + name + '" not found.')
+            raise RuntimeError('template "' + filename + '" not found.')
 
 
 def markdown_handler(filename, context):
