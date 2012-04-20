@@ -1,4 +1,4 @@
-""" handlers.py 
+""" handlers.py
      (C) Copyright 2012 Daniel Fairhead
 
     This file is part of Marlinespike.
@@ -19,17 +19,18 @@
 """
 
 
-
 import os.path
 import re
 import pystache
 import markdown2
 import shutil
-import subprocess # for external commands.
+import subprocess  # for external commands.
 from useful import *
+
 
 def echo_filename(filename, context):
     print os.path.join(context['_output_dir'], filename)
+
 
 def copy_file(filename, context):
     # TODO - cacheing / checking last date.
@@ -37,13 +38,15 @@ def copy_file(filename, context):
     if not os.path.isfile(outputfile):
         shutil.copy2(filename, outputfile)
 
+
 def less_handler(filename, context):
-    with open(context['_output_basename'] + '.css','w') as f:
+    with open(context['_output_basename'] + '.css', 'w') as f:
         subprocess.call(['lessc', filename], stdout=f)
 
 
 ###########
 # For pystache/markdown files:
+# This is long and complex enough to warrant it's own file very soon.
 ###########
 
 # from tests.
@@ -60,6 +63,7 @@ link_patterns = [
 _markdown_renderer = pystache.Renderer()
 _markdown_templates = {}
 
+
 def _get_template(name, context):
     filename = os.path.join(context['_template_dir'], name + context['_template_extn'])
 
@@ -70,10 +74,11 @@ def _get_template(name, context):
             new_template, template_metadata = readfile_with_jsonheader(filename)
 
             if 'template' in template_metadata:
-                replace_string = template_metadata.get('template_replace','{{{ body }}}')
-                parent_template = _get_template(template_metadata['template'],context)
-                new_template = parent_template.replace(replace_string, new_template)
-            _markdown_templates[filename] = new_template 
+                replace_string = template_metadata.get('template_replace', '{{{ body }}}')
+                parent_template = _get_template(template_metadata['template'], context)
+                new_template = parent_template.replace(replace_string, \
+                                                       new_template)
+            _markdown_templates[filename] = new_template
             return new_template
         else:
             raise RuntimeError('template "' + filename + '" not found.')
@@ -82,20 +87,29 @@ _markdown_tag_plugins = {}
 
 __inside_tag_regex = re.compile("\s(?P<key>\S*)\s*=\s*[\"'](?P<val>[^\"']+)")
 
+
 def register_markdown_tag_plugin(tag, func):
+    """ takes 'tag' and 'function'.  The function will be sent all values
+        in a tag as named arguments (useful), but in case you get sent mad
+        data, it's usually a good idea for your function to also take the
+        catchall *kwargs as well.  """
     def make_tag_regex(tag):
-        return re.compile("<%\s*"+tag+"(.*?)%>")
+        return re.compile("<%\s*" + tag + "(.*?)%>")
 
     def make_tag_func(func):
-        return lambda x: func(**{k:v for k,v in 
-            re.findall(__inside_tag_regex, x.groups()[0].__str__())}) 
+        # This returns an anonymous function which takes each of the (key,value) pairs 
+        # returned from the regex, and turns it into a dict, which it then passes as 
+        # named arguments to func.
+        return lambda x: func(**{k: v for k, v in
+            re.findall(__inside_tag_regex, x.groups()[0].__str__())})
 
     _markdown_tag_plugins[tag] = (make_tag_regex(tag), make_tag_func(func))
 
+
 def _do_markdown_tag_plugins(text):
 
-    def do_tag(partial_text, plugin):
-        return re.sub(plugin[0], plugin[1], partial_text)
+    def do_tag(partial_text, (plugin_regex, plugin_func)):
+        return re.sub(plugin_regex, plugin_func, partial_text)
 
     return reduce(do_tag, _markdown_tag_plugins.values(), text)
 
@@ -104,11 +118,12 @@ def markdown_handler(filename, context):
 
     # TODO - try/finally etc.
     text, metadata = readfile_with_jsonheader(filename)
-    
+
     # So we don't polute our mutable friend:
     my_context = dict(context.items() + metadata.items())
 
-    m = markdown2.markdown(_do_markdown_tag_plugins(text), extras=['metadata'], link_patterns=link_patterns)
+    m = markdown2.markdown(_do_markdown_tag_plugins(text), \
+                           extras=['metadata'], link_patterns=link_patterns)
 
     # These before metadata, so they're overridable.
     my_context['body'] = unicode(m)
@@ -116,11 +131,11 @@ def markdown_handler(filename, context):
 
     # Load metadata - this is messy to cope with [items,with,lists]
     # TODO: remove this and recommend JSON metadata?
-    for key,val in m.metadata.iteritems():
+    for key, val in m.metadata.iteritems():
         my_context[key] = \
                 [{'item':x.strip()} for x in val[1:-1].split(',')] \
-            if val[0] == '[' else val
+            if val.startswith('[') else val
 
-    with open(context['_output_basename'] + '.html','w') as f:
-        f.write(pystache.render(_get_template(my_context['template'], my_context), my_context ))
-
+    with open(context['_output_basename'] + '.html', 'w') as f:
+        f.write(pystache.render(_get_template(my_context['template'], my_context), \
+                                my_context))

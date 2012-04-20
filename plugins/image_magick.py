@@ -45,11 +45,14 @@ def image_magick(filename, context):
             continue
 
         outputdir = os.path.join(context['_output_dir'], conversion['destination'])
-
+        outputfile = os.path.join(outputdir,  filename)
         if not os.path.isdir(outputdir):
             os.makedirs(outputdir)
+        elif os.path.isfile(outputfile):
+            # TODO - caching and mtime testing, etc.
+            continue
 
         subprocess.call(['convert','-resize', conversion['resize'], filename, 
-            os.path.join(outputdir,  filename)])
+            outputfile])
 
 context['_file_handlers']['.jpg'] = image_magick

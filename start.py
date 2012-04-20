@@ -29,30 +29,30 @@
 
 import sys                       # For UTF-8 settings.
 reload(sys)                      # Stupid hack to re-apply UTF-8 if it
-                                 #    wasn't loaded originally.
-sys.setdefaultencoding('utf-8')  #    Oh for Py3k everywhere.
+                                 #     wasn't loaded originally.
+sys.setdefaultencoding('utf-8')  #     Oh for Py3k everywhere.
 
 
 # External Libs
-from os import chdir, listdir, getcwd 
+from os import chdir, listdir, getcwd
 import os.path
 import json
 from glob import glob
-import subprocess # needed for most plugins.
+import subprocess  # needed for most plugins.
 import copy
 
 # Internal stuff
 import handlers
-from useful import *
+from useful import endswithwhich, readfile_with_jsonheader
 
 ################################
 # Default Settings
 ################################
 
 _FILE_HANDLERS = {
-    ('.markdown','.md'): handlers.markdown_handler,
-                  '.js': handlers.copy_file,
-                   None: handlers.copy_file # Default
+    ('.markdown', '.md'): handlers.markdown_handler,
+                   '.js': handlers.copy_file,
+                    None: handlers.copy_file  # Default
     }
 
 _HIDE_ME_PREFIX = '_'
@@ -60,13 +60,13 @@ _HIDE_ME_PREFIX = '_'
 # TODO - move this to a function, or something, so it updates via the _HIDE_ME_PREFIX
 
 _DEFAULT_CONFIG = {
-        '_configfile_name': _HIDE_ME_PREFIX + 'config.json',
-        '_file_handlers':_FILE_HANDLERS,
-        '_output_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'site'),
-        '_template_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'templates'),
-        '_template_extn': '.html',
+          '_configfile_name': _HIDE_ME_PREFIX + 'config.json',
+            '_file_handlers': _FILE_HANDLERS,
+               '_output_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'site'),
+             '_template_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'templates'),
+            '_template_extn': '.html',
         '_parent_output_dir': getcwd(),
-        '_base_dir': getcwd()
+                 '_base_dir': getcwd()
         }
 
 ##############################
@@ -78,9 +78,11 @@ def exclude_test(filename):
     """ This is a function so it can be expanded later without refactoring... """
     return False if filename[0] == _HIDE_ME_PREFIX else True
 
+
 #############################
 # The big 3
 #############################
+
 
 def do_config(where, previous_context):
     if not os.path.exists(previous_context['_configfile_name']):
@@ -117,7 +119,6 @@ def do_dir(where, previous_context):
     elif not os.path.isdir(context['_output_dir']):
         os.rename(context['_output_dir'], context['_output_dir'] + '.prev')
 
-
     for filename in filter(exclude_test, listdir('.')):
 
         if os.path.isfile(filename):
@@ -133,14 +134,10 @@ def do_dir(where, previous_context):
 
             context['_parent_output_dir'] = my_parent_output_dir
             context['_output_dir'] = my_output_dir
-            
 
-
-    # return to where we came from before leaving... 
+    # return to where we came from before leaving...
     # it's only polite.
     chdir(return_to)
-
-
 
 
 if __name__ == '__main__':

@@ -19,12 +19,12 @@
 """
 
 
-
 import json
 
 ################################
 # Generic(ish) Useful Functions
 ################################
+
 
 def endswithwhich(search_in, suffixes):
     """ Takes a string and a list of suffixes to test against.
@@ -33,13 +33,13 @@ def endswithwhich(search_in, suffixes):
         works. Within the list, you can have tuples of multiple
         options too. """
     if type(suffixes) is list:
-        for suffix in filter(lambda x:x, suffixes):
+        for suffix in filter(lambda x: x, suffixes):
             if search_in.endswith(suffix):
                 return suffix
     elif type(suffixes) is str:
         return suffixes if search_in.endswith(suffixes) else None
     return None
-    
+
 
 def readfile_with_jsonheader(filename):
     """ Load a (text) file, and if it starts with '-j-', parse until '\n---\n'
@@ -61,7 +61,7 @@ def readfile_with_jsonheader(filename):
                     try:
                         context = json.loads(json_data)
                     except:
-                        raise RuntimeError('Invalid / Unhappy JSON meta data at the top of "' + filename + '"') 
+                        raise RuntimeError('Invalid / Unhappy JSON meta data at the top of "' + filename + '"')
                     break
         else:
             f.seek(0)

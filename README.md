@@ -26,6 +26,14 @@ libraries.
 Basics are working, most of our next generation site is working with this now,
 still a lot of cleaning up and polishing needed before 'production ready'.
 
+## Requirements:
+
+- Python, reasonably recent 2.6/2.7 should be fine.  I'm working here with 2.7.3
+- pystache (for templating)
+- markdown2 (for markdown files)
+- lessc (if you want to use the less to css plugin)
+- yuic (if you want to use the javascript/css minifier plugin)
+
 ## Contact:
 
 Either danthedeckie on github, or www.omnivision.om.org
