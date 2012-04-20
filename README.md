@@ -26,4 +26,6 @@ libraries.
 Basics are working, most of our next generation site is working with this now,
 still a lot of cleaning up and polishing needed before 'production ready'.
 
+## Contact:
 
+Either danthedeckie on github, or www.omnivision.om.org

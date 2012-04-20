@@ -1,3 +1,25 @@
+""" handlers.py 
+     (C) Copyright 2012 Daniel Fairhead
+
+    This file is part of Marlinespike.
+
+    Marlinespike is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Marlinspike is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Marlinespike.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
+
+
 import os.path
 import re
 import pystache
@@ -10,7 +32,10 @@ def echo_filename(filename, context):
     print os.path.join(context['_output_dir'], filename)
 
 def copy_file(filename, context):
-    shutil.copy2(filename, os.path.join(context['_output_dir'], filename))
+    # TODO - cacheing / checking last date.
+    outputfile = os.path.join(context['_output_dir'], filename)
+    if not os.path.isfile(outputfile):
+        shutil.copy2(filename, outputfile)
 
 def less_handler(filename, context):
     with open(context['_output_basename'] + '.css','w') as f:
@@ -53,6 +78,27 @@ def _get_template(name, context):
         else:
             raise RuntimeError('template "' + filename + '" not found.')
 
+_markdown_tag_plugins = {}
+
+__inside_tag_regex = re.compile("\s(?P<key>\S*)\s*=\s*[\"'](?P<val>[^\"']+)")
+
+def register_markdown_tag_plugin(tag, func):
+    def make_tag_regex(tag):
+        return re.compile("<%\s*"+tag+"(.*?)%>")
+
+    def make_tag_func(func):
+        return lambda x: func(**{k:v for k,v in 
+            re.findall(__inside_tag_regex, x.groups()[0].__str__())}) 
+
+    _markdown_tag_plugins[tag] = (make_tag_regex(tag), make_tag_func(func))
+
+def _do_markdown_tag_plugins(text):
+
+    def do_tag(partial_text, plugin):
+        return re.sub(plugin[0], plugin[1], partial_text)
+
+    return reduce(do_tag, _markdown_tag_plugins.values(), text)
+
 
 def markdown_handler(filename, context):
 
@@ -62,7 +108,7 @@ def markdown_handler(filename, context):
     # So we don't polute our mutable friend:
     my_context = dict(context.items() + metadata.items())
 
-    m = markdown2.markdown(text, extras=['metadata'], link_patterns=link_patterns)
+    m = markdown2.markdown(_do_markdown_tag_plugins(text), extras=['metadata'], link_patterns=link_patterns)
 
     # These before metadata, so they're overridable.
     my_context['body'] = unicode(m)
