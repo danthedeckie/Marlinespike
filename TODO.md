@@ -1,7 +1,11 @@
 ## Known bugs
 (aka unexpected behavior)
 
-- None known of - but probably I'm not testing hard enough :-)
+- in plugins, <% tagname key="value'subvalue'" %>
+  has problems. Regex is wrong, so it ends value at the single
+  quote rather than continuing to the double... There is no
+  escaping either.  Not good.  Also, multi-line tags should be
+  possible.
 
 ## Current projects
 
