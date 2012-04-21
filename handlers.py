@@ -84,9 +84,12 @@ def _get_template(name, context):
             raise RuntimeError('template "' + filename + '" not found.')
 
 _markdown_tag_plugins = {}
+_post_markdown_plugins = {}
 
 __inside_tag_regex = re.compile("\s(?P<key>\S*)\s*=\s*[\"'](?P<val>[^\"']+)")
 
+def register_post_markdown_plugin(name, func):
+    _post_markdown_plugins[name] = func
 
 def register_markdown_tag_plugin(tag, func):
     """ takes 'tag' and 'function'.  The function will be sent all values
@@ -140,7 +143,7 @@ def markdown_handler(filename, context):
             if val.startswith('[') else val
 
     # Sections:
-    # Should this be "plugin'd out? TODO
+    # Should this be 'plugin'd out? TODO
     # TODO? default _section?  or defined in _config.json? 
     my_section = my_context.get('section', my_context.get('default_section', None))
 
@@ -148,6 +151,12 @@ def markdown_handler(filename, context):
         my_section_dict = filter(lambda x: x.get('title',None) == my_section, my_context['sections'])
         if my_section_dict:
             my_section_dict[0]['current'] = True
+
+    # Run the post_markdown plugins...
+
+    for plugin in my_context.get('plugins',[]):
+        if _post_markdown_plugins.has_key(plugin):
+            _post_markdown_plugins[plugin](my_context)
 
     # And write the file:
 
