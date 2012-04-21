@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+		<head><title> {{ title }} </title></head>
+<body>
+<nav>
+<ul>
+{{#sections}}
+<li class="{{#current }}current{{/current}}"><a href="{{url}}">{{ title }}</a></li>
+{{/sections}}
+</ul>
+</nav>
+title: {{title}}
+<article>
+{{{ body }}}
+</article>
+</body>
+</html>

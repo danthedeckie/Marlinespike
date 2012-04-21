@@ -122,6 +122,9 @@ def markdown_handler(filename, context):
     # So we don't polute our mutable friend:
     my_context = dict(context.items() + metadata.items())
 
+    
+
+
     m = markdown2.markdown(_do_markdown_tag_plugins(text), \
                            extras=['metadata'], link_patterns=link_patterns)
 
@@ -135,6 +138,18 @@ def markdown_handler(filename, context):
         my_context[key] = \
                 [{'item':x.strip()} for x in val[1:-1].split(',')] \
             if val.startswith('[') else val
+
+    # Sections:
+    # Should this be "plugin'd out? TODO
+    # TODO? default _section?  or defined in _config.json? 
+    my_section = my_context.get('section', my_context.get('default_section', None))
+
+    if "sections" in my_context:
+        my_section_dict = filter(lambda x: x.get('title',None) == my_section, my_context['sections'])
+        if my_section_dict:
+            my_section_dict[0]['current'] = True
+
+    # And write the file:
 
     with open(context['_output_basename'] + '.html', 'w') as f:
         f.write(pystache.render(_get_template(my_context['template'], my_context), \

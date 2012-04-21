@@ -94,14 +94,13 @@ def do_config(where, previous_context):
 
 def do_file(filename, context):
     root, ext = os.path.splitext(filename)
-    context['_output_basename'] = os.path.join(context['_output_dir'], root)
-    context['_input_extension'] = ext
-    print filename
-    ff = context['_file_handlers']
-    ff[endswithwhich(filename, ff.keys())](filename, context)
+    my_context = copy.deepcopy(context)
 
-    del(context['_output_basename'])
-    del(context['_input_extension'])
+    my_context['_output_basename'] = os.path.join(context['_output_dir'], root)
+    my_context['_input_extension'] = ext
+    print filename
+    ff = my_context['_file_handlers']
+    ff[endswithwhich(filename, ff.keys())](filename, my_context)
 
 
 def do_dir(where, previous_context):

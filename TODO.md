@@ -1,11 +1,12 @@
 ## Known bugs
 (aka unexpected behavior)
 
-- No easy way known to do "which page is live" in navigation sets.
+- None known of - but probably I'm not testing hard enough :-)
 
 ## Current projects
 
 - figuring out plugin hooks & best practices
+  + move "sections" support to a plugin?
 - error handling and catching
 - documentation
 
