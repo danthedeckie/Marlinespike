@@ -1,5 +1,6 @@
 {
 	"template" : "a",
+	"section": "none",
 	"sections": [
 				{   "url" : "editing.html",
 				  "title" : "Editing" },

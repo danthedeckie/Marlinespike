@@ -39,7 +39,6 @@ import os.path
 import json
 from glob import glob
 import subprocess  # needed for most plugins.
-#import copy
 
 # Internal stuff
 from ideas import mdict
