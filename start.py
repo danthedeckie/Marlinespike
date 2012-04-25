@@ -39,9 +39,10 @@ import os.path
 import json
 from glob import glob
 import subprocess  # needed for most plugins.
-import copy
+#import copy
 
 # Internal stuff
+from ideas import mdict
 import handlers
 from useful import endswithwhich, readfile_with_jsonheader
 
@@ -76,7 +77,14 @@ _DEFAULT_CONFIG = {
 
 def exclude_test(filename):
     """ This is a function so it can be expanded later without refactoring... """
-    return False if filename[0] == _HIDE_ME_PREFIX else True
+    if filename.startswith(_HIDE_ME_PREFIX):
+        return False
+    elif filename.startswith('.git'):
+        return False
+    elif filename.endswith('.swp'):
+        return False
+    else:
+        return True
 
 
 #############################
@@ -86,15 +94,15 @@ def exclude_test(filename):
 
 def do_config(where, previous_context):
     if not os.path.exists(previous_context['_configfile_name']):
-        return copy.deepcopy(previous_context)
+        return mdict(previous_context, {})  
 
     with open(previous_context['_configfile_name']) as f:
-        return dict(copy.deepcopy(previous_context).items() + json.load(f).items())
+        return mdict(previous_context, json.load(f).items())
 
 
 def do_file(filename, context):
     root, ext = os.path.splitext(filename)
-    my_context = copy.deepcopy(context)
+    my_context = mdict(context, {})
 
     my_context['_output_basename'] = os.path.join(context['_output_dir'], root)
     my_context['_input_extension'] = ext
@@ -107,8 +115,9 @@ def do_dir(where, previous_context):
     return_to = getcwd()
     chdir(where)
     context = do_config(where, previous_context)
-
-    context['_output_dir'] = context.pop('_output_dir', os.path.join(context['_parent_output_dir'], where))
+    
+    if '_output_dir' not in context:
+        context['_output_dir'] = os.path.join(context['_parent_output_dir'], where)
 
     if os.path.exists('_config.py'):
         execfile('_config.py')
