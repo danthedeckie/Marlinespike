@@ -6,9 +6,9 @@
 """
 
 def omnitube_tag(video='', height='338', width='600', **kwargs):
-    return '<iframe type="text/html"  width="' + width + '"' \
+    return '<div class="video-container"><iframe type="text/html"  width="' + width + '"' \
            ' height="' + height + '" autoplay="false"' \
            ' src="http://www.omnitube.org/embed.php?video=' + video + ' "' \
-           ' frameborder="0"></iframe>'
+           ' frameborder="0"></iframe></div>'
 
 handlers.register_markdown_tag_plugin('OMNItube', omnitube_tag)
