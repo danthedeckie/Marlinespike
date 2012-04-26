@@ -26,20 +26,22 @@ import markdown2
 import shutil
 import subprocess  # for external commands.
 from useful import *
-
+import logging
 
 def echo_filename(filename, context):
     print os.path.join(context['_output_dir'], filename)
 
 
 def copy_file(filename, context):
-    # TODO - cacheing / checking last date.
     outputfile = os.path.join(context['_output_dir'], filename)
-    if not os.path.isfile(outputfile):
+    if not os.path.isfile(outputfile) or \
+            os.path.getmtime(filename) > os.path.getmtime(outputfile): 
+        logging.info("Updating:" + filename)
         shutil.copy2(filename, outputfile)
 
 
 def less_handler(filename, context):
+    logging.info("Updating:" + filename)
     with open(context['_output_basename'] + '.css', 'w') as f:
         subprocess.call(['lessc', filename], stdout=f)
 
@@ -118,7 +120,9 @@ def _do_markdown_tag_plugins(text):
 
 
 def markdown_handler(filename, context):
-
+    # TODO - somehow caching / mtime / something for templates
+    #        and these files so they only update when needed.
+    logging.info('Updating:' + filename)  
     # TODO - try/finally etc.
     text, metadata = readfile_with_jsonheader(filename)
 

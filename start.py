@@ -40,6 +40,7 @@ import json
 from glob import glob
 import subprocess  # needed for most plugins.
 import copy
+import logging
 
 # Internal stuff
 import handlers
@@ -68,6 +69,9 @@ _DEFAULT_CONFIG = {
         '_parent_output_dir': getcwd(),
                  '_base_dir': getcwd()
         }
+
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 ##############################
 # Function helpers
@@ -102,7 +106,7 @@ def do_file(filename, context):
 
     my_context['_output_basename'] = os.path.join(context['_output_dir'], root)
     my_context['_input_extension'] = ext
-    print filename
+    #print filename
     ff = my_context['_file_handlers']
     ff[endswithwhich(filename, ff.keys())](filename, my_context)
 
