@@ -75,8 +75,12 @@ _DEFAULT_CONFIG = {
 
 
 def exclude_test(filename):
-    """ This is a function so it can be expanded later without refactoring... """
-    return False if filename[0] == _HIDE_ME_PREFIX else True
+    if filename.startswith(".git") \
+    or filename.endswith(".swp") \
+    or filename.startswith(_HIDE_ME_PREFIX):
+        return False
+    else:
+        return True
 
 
 #############################
