@@ -34,7 +34,7 @@ class mutant(object):
     def __init__(self, parent):
        self.parent_data = parent
 
-    def __getattr__(self, name):
+    def __getattribute__(self, name):
         return object.__getattribute__(self, name) \
                 if name in _temp_specials_list_ else \
                     object.__getattribute__(self, 'parent_data').__getattribute__(name)
@@ -55,7 +55,7 @@ class mutant(object):
         """ If we're still proxying to the 'parent' data,
             swap now to using our own copy. """
         if not self.own_data:
-            own_data = True
+            object.__setattr__(self,'own_data', True)
             object.__setattr__(self,'parent_data',type(self.parent_data)((self.parent_data)))
 
     def __setattr__(self, name, value):
