@@ -46,6 +46,15 @@ def less_handler(filename, context):
         subprocess.call(['lessc', filename], stdout=f)
 
 
+def pngcrush_handler(filename, context):
+    logging.info("PNGCrush:" + filename)
+    subprocess.call (['pngcrush', filename, context['_output_basename'] + '.png'])
+
+
+def yuic_js_handler(filename, context):
+    logging.info("YUIC:" + filename)
+    subprocess.call(['yuic', filename,'-o',context['_output_basename'] + '.js'])
+
 ###########
 # For pystache/markdown files:
 # This is long and complex enough to warrant it's own file very soon.

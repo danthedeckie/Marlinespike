@@ -52,7 +52,8 @@ from useful import endswithwhich, readfile_with_jsonheader
 
 _FILE_HANDLERS = {
     ('.markdown', '.md'): handlers.markdown_handler,
-                   '.js': handlers.copy_file,
+                   '.js': handlers.yuic_js_handler,
+                  '.png': handlers.pngcrush_handler,
                     None: handlers.copy_file  # Default
     }
 
@@ -81,6 +82,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 def exclude_test(filename):
     if filename.startswith(".git") \
     or filename.endswith(".swp") \
+    or filename == '.DS_Store' \
     or filename.startswith(_HIDE_ME_PREFIX):
         return False
     else:
