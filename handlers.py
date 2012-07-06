@@ -32,28 +32,36 @@ def echo_filename(filename, context):
     print os.path.join(context['_output_dir'], filename)
 
 
+# it should be fairly obvious that a lot of the following is
+# boilerplate, and can probably be abstracted out. TODO.
+
 def copy_file(filename, context):
     outputfile = os.path.join(context['_output_dir'], filename)
-    if not os.path.isfile(outputfile) or \
-            os.path.getmtime(filename) > os.path.getmtime(outputfile): 
+    if file_not_already_done(filename, outputfile):
         logging.info("Updating:" + filename)
         shutil.copy2(filename, outputfile)
 
 
 def less_handler(filename, context):
-    logging.info("Updating:" + filename)
-    with open(context['_output_basename'] + '.css', 'w') as f:
-        subprocess.call(['lessc', filename], stdout=f)
+    outputfile = context['_output_basename'] + '.css'
+    if file_not_already_done(filename, outputfile):
+        logging.info("Updating:" + filename)
+        with open(outputfile, 'w') as f:
+            subprocess.call(['lessc', filename], stdout=f)
 
 
 def pngcrush_handler(filename, context):
-    logging.info("PNGCrush:" + filename)
-    subprocess.call (['pngcrush', filename, context['_output_basename'] + '.png'])
+    outputfile = context['_output_basename'] + '.png'
+    if file_not_already_done(filename, outputfile):
+        logging.info("PNGCrush:" + filename)
+        subprocess.call (['pngcrush', filename, outputfile]) 
 
 
 def yuic_js_handler(filename, context):
-    logging.info("YUIC:" + filename)
-    subprocess.call(['yuic', filename,'-o',context['_output_basename'] + '.js'])
+    outputfile = context['_output_basename'] + '.js'
+    if file_not_already_done(filename, outputfile):
+        logging.info("YUIC:" + filename)
+        subprocess.call(['yuic', filename, '-o', outputfile])
 
 ###########
 # For pystache/markdown files:
@@ -72,8 +80,11 @@ link_patterns = [
     ]
 
 _markdown_renderer = pystache.Renderer()
-_markdown_templates = {}
 
+# Here the already-loaded templates are cached.  When you '_get_template', it checks
+# here first.
+
+_markdown_templates = {}
 
 def _get_template(name, context):
     filename = os.path.join(context['_template_dir'], name + context['_template_extn'])

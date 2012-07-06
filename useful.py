@@ -18,7 +18,7 @@
 
 """
 
-
+import os.path
 import json
 
 ################################
@@ -41,6 +41,15 @@ def endswithwhich(search_in, suffixes):
     return None
 
 
+def file_not_already_done(original, new):
+    if not os.path.isfile(new) or \
+            os.path.getmtime(original) > os.path.getmtime(new): 
+        return True
+    else : 
+        return False
+
+
+
 def readfile_with_jsonheader(filename):
     """ Load a (text) file, and if it starts with '-j-', parse until '\n---\n'
         as JSON metadata, and then return ( rest_of_the_file, metadata ), or
@@ -59,7 +68,7 @@ def readfile_with_jsonheader(filename):
                     json_data += line
                 else:
                     try:
-                        context = json.loads(json_data)
+                        context = json.loads(json_data.strip())
                     except:
                         raise RuntimeError('Invalid / Unhappy JSON meta data at the top of "' + filename + '"')
                     break

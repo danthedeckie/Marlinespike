@@ -151,3 +151,4 @@ def do_dir(where, previous_context):
 
 if __name__ == '__main__':
     do_dir(getcwd(), _DEFAULT_CONFIG)
+    print("Done.\n")
