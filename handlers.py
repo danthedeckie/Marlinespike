@@ -43,6 +43,8 @@ def copy_file(filename, context):
 
 
 def less_handler(filename, context):
+    need_shell_command('lessc')
+
     outputfile = context['_output_basename'] + '.css'
     if not file_already_done(filename, outputfile):
         logging.info("Updating:" + filename)
@@ -51,6 +53,10 @@ def less_handler(filename, context):
 
 
 def pngcrush_handler(filename, context):
+    if not shell_command_exists('pngcrush'):
+        logging.info('pngcrush not found. copying instead')
+        return copy_file(filename, context)
+
     outputfile = context['_output_basename'] + '.png'
     if not file_already_done(filename, outputfile):
         logging.info("PNGCrush:" + filename)
@@ -58,6 +64,10 @@ def pngcrush_handler(filename, context):
 
 
 def yuic_js_handler(filename, context):
+    if not shell_command_exists('yuic'):
+        logging.info('yuic not found. copying instead')
+        return copy_file(filename, context)
+
     outputfile = context['_output_basename'] + '.js'
     if not file_already_done(filename, outputfile):
         logging.info("YUIC:" + filename)

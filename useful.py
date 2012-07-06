@@ -19,6 +19,7 @@
 """
 
 import os.path
+import commands
 import json
 
 ################################
@@ -47,6 +48,14 @@ def file_already_done(original, new):
             os.path.getmtime(original) <= os.path.getmtime(new))
 
 
+def shell_command_exists(commandname):
+    # there's probably a better / faster way to do this.
+    return commands.getoutput('which ' + commandname) != ''
+
+def need_shell_command(commandname):
+    if not shell_command_exists(commandname):
+        print('Oh no! You need "'+ commandname+'" in you path!')
+        exit(2)
 
 def readfile_with_jsonheader(filename):
     """ Load a (text) file, and if it starts with '-j-', parse until '\n---\n'
