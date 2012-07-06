@@ -37,14 +37,14 @@ def echo_filename(filename, context):
 
 def copy_file(filename, context):
     outputfile = os.path.join(context['_output_dir'], filename)
-    if file_not_already_done(filename, outputfile):
+    if not file_already_done(filename, outputfile):
         logging.info("Updating:" + filename)
         shutil.copy2(filename, outputfile)
 
 
 def less_handler(filename, context):
     outputfile = context['_output_basename'] + '.css'
-    if file_not_already_done(filename, outputfile):
+    if not file_already_done(filename, outputfile):
         logging.info("Updating:" + filename)
         with open(outputfile, 'w') as f:
             subprocess.call(['lessc', filename], stdout=f)
@@ -52,14 +52,14 @@ def less_handler(filename, context):
 
 def pngcrush_handler(filename, context):
     outputfile = context['_output_basename'] + '.png'
-    if file_not_already_done(filename, outputfile):
+    if not file_already_done(filename, outputfile):
         logging.info("PNGCrush:" + filename)
         subprocess.call (['pngcrush', filename, outputfile]) 
 
 
 def yuic_js_handler(filename, context):
     outputfile = context['_output_basename'] + '.js'
-    if file_not_already_done(filename, outputfile):
+    if not file_already_done(filename, outputfile):
         logging.info("YUIC:" + filename)
         subprocess.call(['yuic', filename, '-o', outputfile])
 

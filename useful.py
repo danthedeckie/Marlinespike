@@ -41,12 +41,10 @@ def endswithwhich(search_in, suffixes):
     return None
 
 
-def file_not_already_done(original, new):
-    if not os.path.isfile(new) or \
-            os.path.getmtime(original) > os.path.getmtime(new): 
-        return True
-    else : 
-        return False
+def file_already_done(original, new):
+    """ very basic check if $new exists, or if $original is newer than $new. """
+    return ((os.path.isfile(new)) and 
+            os.path.getmtime(original) <= os.path.getmtime(new))
 
 
 
