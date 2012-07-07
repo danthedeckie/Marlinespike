@@ -1,4 +1,4 @@
-""" image_magick plugin: v.0.1
+""" image_magick plugin: v.0.2
 
     Example: 
     
@@ -35,6 +35,7 @@
 
 """
 
+@external_handler('convert',handlers.copy_file)
 def image_magick(filename, context):
     if not 'image_magick' in context:
         return handlers.copy_file(filename, context)
@@ -52,7 +53,7 @@ def image_magick(filename, context):
             # TODO - caching and mtime testing, etc.
             continue
 
-        subprocess.call(['convert','-resize', conversion['resize'], filename, 
+        subprocess.check_call(['convert','-resize', conversion['resize'], filename, 
             outputfile])
 
 context['_file_handlers']['.jpg'] = image_magick

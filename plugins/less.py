@@ -1,4 +1,4 @@
-""" less css plugin: 0.0.1
+""" less css plugin: 0.0.2
 
     Note: there seem to be 2 versions of "lessc" around.  If you have the wrong one,
     there may be problems.

@@ -21,18 +21,25 @@ Also, Jekyll seems (to me) to be quite a bit complex beast, wheras I think this
 ought to be a reasonably simple project.  Almost everything already exists as
 libraries.
 
+Writing a new plugin for Jekyll to simply throw .less files at lessc ended up being
+20 or so lines of boilerplate, subclassing stuff and generally was a bit of a pain.
+
+I want plugins to be *incredibly* simple to write.  There should be as little boilerplate
+as possible.
+
 ## Status:
 
-Basics are working, most of our next generation site is working with this now,
+Basics are working, our next generation site is working with this now,
 still a lot of cleaning up and polishing needed before 'production ready'.
 
 ## Requirements:
 
-- Python, reasonably recent 2.6/2.7 should be fine.  I'm working here with 2.7.3
-- pystache (for templating)
-- markdown2 (for markdown files)
+- Python>=2.7.  I'm working here with 2.7.3
+- pystache (for templating) (easy_install pystache)
+- markdown2 (for markdown files) (easy_install markdown2)
 - lessc (if you want to use the less to css plugin)
 - yuic (if you want to use the javascript/css minifier plugin)
+- image-magick (if you want to use the image_magick plugin)
 
 ## Contact:
 

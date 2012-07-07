@@ -12,7 +12,7 @@
 - figuring out plugin hooks & best practices
   + move "sections" support to a plugin?
 - error handling and catching
-- documentation
+- documentation!!!
 
 ## Next
 

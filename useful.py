@@ -53,8 +53,10 @@ class memoize(object):
 
 # TODO: handler 'useful' module?
 # TODO: think... this seems in some ways needlessly complex.  It does save
-#       boilerplater in the handlers file, but is there a simpler way to do
-        this?
+#       boilerplate in the handlers file, but is there a simpler way to do
+#       this?
+
+
 class external_handler(object):
     """ decorator for handlers which call external programs.  This checks if the program
         is callable, has a fallback (to another function, usually 'copy_file') """
@@ -78,8 +80,6 @@ class external_handler(object):
         # if __init__ takes arguments, we have to wrap stuff in a closure here.  stupid.
 
         return lambda *args, **vargs: (self.fallback if self.fallback else func)(*args, **vargs)
-
-
 
 ######################################
 
