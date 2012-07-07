@@ -5,8 +5,14 @@
 
 """
 
+@external_handler('lessc')
 def less_handler(filename, context):
-    with open(context['_output_basename'] + '.css','w') as f:
-        subprocess.call(['lessc', filename], stdout=f)
+    """ LESS -> CSS converter. uses the 'lessc' compiler """
+    outputfile = context['_output_basename'] + '.css'
+    if not file_already_done(filename, outputfile):
+        logging.info("Updating:" + filename)
+        with open(outputfile, 'w') as f:
+            subprocess.check_call(['lessc', filename], stdout=f)
+
 
 context['_file_handlers']['.less'] = less_handler

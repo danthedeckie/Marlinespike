@@ -1,4 +1,4 @@
-"""  useful.py
+"""  useful.py -- useful functions and decorators
      (C) Copyright 2012 Daniel Fairhead
 
     This file is part of Marlinespike.
@@ -20,7 +20,15 @@
 
 import os.path
 import commands
+import logging
 import json
+
+# TODO: sort this out.  I'm sure there is a better way to use this module.
+logging.basicConfig(level=logging.DEBUG)
+# a bit hacky colouring the output
+logging.addLevelName( logging.WARNING, "\033[1;31m%s\033[1;m" % logging.getLevelName(logging.WARNING))
+logging.addLevelName( logging.ERROR, "\033[1;41m%s\033[1;m" % logging.getLevelName(logging.ERROR))
+logging.addLevelName( logging.INFO, "\033[0;m%s" % logging.getLevelName(logging.INFO))
 
 ################################
 # Generic(ish) Useful Functions
@@ -43,6 +51,40 @@ class memoize(object):
     def __repr__(self):
         return self.func.__doc__
 
+# TODO: handler 'useful' module?
+# TODO: think... this seems in some ways needlessly complex.  It does save
+#       boilerplater in the handlers file, but is there a simpler way to do
+        this?
+class external_handler(object):
+    """ decorator for handlers which call external programs.  This checks if the program
+        is callable, has a fallback (to another function, usually 'copy_file') """
+
+    def __init__(self, command, fallback=False):
+        if shell_command_exists(command):
+            self.fallback=False
+        else:
+            if not fallback:
+                def fail(filename, context):
+                    logging.error('Oh no! You need "{}" in your $PATH!\n'
+                          'So cannot process "{}".\n'.format(command,filename))
+                    exit(2)
+                self.fallback=fail
+            else:
+                logging.warn('You don\'t have "{}" in your $PATH, '
+                      'so using "{}" function instead.'.format(command,fallback.func_name))
+                self.fallback=fallback
+
+    def __call__(self, func):
+        # if __init__ takes arguments, we have to wrap stuff in a closure here.  stupid.
+
+        return lambda *args, **vargs: (self.fallback if self.fallback else func)(*args, **vargs)
+
+
+
+######################################
+
+
+
 def endswithwhich(search_in, suffixes):
     """ Takes a string and a list of suffixes to test against.
         Returns either the suffix at the end of search_in, or
@@ -60,7 +102,7 @@ def endswithwhich(search_in, suffixes):
 
 def file_already_done(original, new):
     """ very basic check if $new exists, or if $original is newer than $new. """
-    return ((os.path.isfile(new)) and 
+    return ((os.path.isfile(new)) and
             os.path.getmtime(original) <= os.path.getmtime(new))
 
 @memoize

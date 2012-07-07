@@ -28,6 +28,8 @@ import subprocess  # for external commands.
 from useful import *
 import logging
 
+
+
 def echo_filename(filename, context):
     print os.path.join(context['_output_dir'], filename)
 
@@ -42,53 +44,25 @@ def copy_file(filename, context):
         shutil.copy2(filename, outputfile)
 
 
-# Hm. Decorators should do it:
-class external_handler(object):
-    def __init__(self, command, fallback, func): 
-        if not shell_command_in_path(command):
-            if fallback:
-                self.func = fallback
-            else:
-                print('Oh no! You need "'+command+'" in your $PATH!\n')
-                exit(2)
-        else:
-            self.func = func
-
-    def __call__(self, *args):
-        return self.func(*args)
-
-
-#TODO @external_handler(command='lessc', fallback=False)
-def less_handler(filename, context):
-    need_shell_command('lessc')
-
-    outputfile = context['_output_basename'] + '.css'
-    if not file_already_done(filename, outputfile):
-        logging.info("Updating:" + filename)
-        with open(outputfile, 'w') as f:
-            subprocess.call(['lessc', filename], stdout=f)
-
-
+@external_handler('pngcrush',copy_file)
 def pngcrush_handler(filename, context):
-    if not shell_command_exists('pngcrush'):
-        logging.info('pngcrush not found. copying instead')
-        return copy_file(filename, context)
+    """ makes png images smaller. fallsback to copying if pngcrush not found. """
 
     outputfile = context['_output_basename'] + '.png'
     if not file_already_done(filename, outputfile):
         logging.info("PNGCrush:" + filename)
-        subprocess.call (['pngcrush', filename, outputfile]) 
+        noise = subprocess.check_output (['pngcrush', filename, outputfile])
 
 
+@external_handler('yuic',copy_file)
 def yuic_js_handler(filename, context):
-    if not shell_command_exists('yuic'):
-        logging.info('yuic not found. copying instead')
-        return copy_file(filename, context)
-
+    """ uses the Yahoo 'yuic' compiler to minify javascript. """
     outputfile = context['_output_basename'] + '.js'
     if not file_already_done(filename, outputfile):
         logging.info("YUIC:" + filename)
-        subprocess.call(['yuic', filename, '-o', outputfile])
+        subprocess.check_call(['yuic', filename, '-o', outputfile])
+
+
 
 ###########
 # For pystache/markdown files:
@@ -164,7 +138,6 @@ def _do_markdown_tag_plugins(text):
         return re.sub(plugin_regex, plugin_func, partial_text)
 
     return reduce(do_tag, _markdown_tag_plugins.values(), text)
-
 
 def markdown_handler(filename, context):
     # TODO - somehow caching / mtime / something for templates

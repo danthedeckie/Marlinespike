@@ -40,11 +40,10 @@ import json
 from glob import glob
 import subprocess  # needed for most plugins.
 import copy
-import logging
 
 # Internal stuff
 import handlers
-from useful import endswithwhich, readfile_with_jsonheader
+from useful import endswithwhich, external_handler, file_already_done, readfile_with_jsonheader, logging
 
 ################################
 # Default Settings
