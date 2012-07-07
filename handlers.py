@@ -42,6 +42,23 @@ def copy_file(filename, context):
         shutil.copy2(filename, outputfile)
 
 
+# Hm. Decorators should do it:
+class external_handler(object):
+    def __init__(self, command, fallback, func): 
+        if not shell_command_in_path(command):
+            if fallback:
+                self.func = fallback
+            else:
+                print('Oh no! You need "'+command+'" in your $PATH!\n')
+                exit(2)
+        else:
+            self.func = func
+
+    def __call__(self, *args):
+        return self.func(*args)
+
+
+#TODO @external_handler(command='lessc', fallback=False)
 def less_handler(filename, context):
     need_shell_command('lessc')
 

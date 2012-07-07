@@ -26,6 +26,22 @@ import json
 # Generic(ish) Useful Functions
 ################################
 
+class memoize(object):
+    """ v. simple memoizing decorator. """
+    def __init__(self, func):
+        self.func = func
+        self.cache = {}
+
+    def __call__(self, *args):
+        if args in self.cache:
+            return self.cache[args]
+        else:
+            value = self.func(*args)
+            self.cache[args] = value
+            return value
+
+    def __repr__(self):
+        return self.func.__doc__
 
 def endswithwhich(search_in, suffixes):
     """ Takes a string and a list of suffixes to test against.
@@ -47,14 +63,14 @@ def file_already_done(original, new):
     return ((os.path.isfile(new)) and 
             os.path.getmtime(original) <= os.path.getmtime(new))
 
-
+@memoize
 def shell_command_exists(commandname):
     # there's probably a better / faster way to do this.
     return commands.getoutput('which ' + commandname) != ''
 
 def need_shell_command(commandname):
     if not shell_command_exists(commandname):
-        print('Oh no! You need "'+ commandname+'" in you path!')
+        print('Oh no! You need "'+ commandname+'" in your $PATH!')
         exit(2)
 
 def readfile_with_jsonheader(filename):
