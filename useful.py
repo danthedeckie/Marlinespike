@@ -70,7 +70,7 @@ def shell_command_exists(commandname):
 
 def need_shell_command(commandname):
     if not shell_command_exists(commandname):
-        print('Oh no! You need "'+ commandname+'" in your $PATH!')
+        print('Oh no! You need "'+ commandname+'" in you path!')
         exit(2)
 
 def readfile_with_jsonheader(filename):
