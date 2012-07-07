@@ -110,6 +110,12 @@ _markdown_tag_plugins = {}
 _post_markdown_plugins = {}
 
 __inside_tag_regex = re.compile("\s(?P<key>\S*)\s*=\s*[\"'](?P<val>[^\"']+)")
+# TODO: fix
+# ^^^ bug is here.
+# maybe something to do with
+# \"(\\.|[^\"])*\"
+# or some ideas from 
+# http://stackoverflow.com/questions/249791/regex-for-quoted-string-with-escaping-quotes
 
 def register_post_markdown_plugin(name, func):
     _post_markdown_plugins[name] = func
