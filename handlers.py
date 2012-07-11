@@ -43,6 +43,13 @@ def copy_file(filename, context):
         logging.info("Updating:" + filename)
         shutil.copy2(filename, outputfile)
 
+## TODO: 'link_file' (hardlinks and softlinks?)
+##       or would it be better to have this as an option in copy_file?
+##       one thing to remember, there may be minifying later on in the chain,
+##       i.e. running uglifyjs or the closure compiler on .js files in the deploy
+##       stage, post-marlinespike.  we don't want the source files being messed up
+##       by that.
+
 
 @external_handler('pngcrush',copy_file)
 def pngcrush_handler(filename, context):
