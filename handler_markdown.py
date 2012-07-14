@@ -61,10 +61,10 @@ class markdown(handler):
     def make_outputfile_name(self, inputfile, context):
         return context['_output_basename'] + '.html'
 
-    def register_post_plugin(name, func):
+    def register_post_plugin(self, name, func):
         _post_markdown_plugins[name] = func
 
-    def register_tag_plugin(tag, func):
+    def register_tag_plugin(self, tag, func):
         """ takes 'tag' and 'function'.  The function will be sent all values
             in a tag as named arguments (useful), but in case you get sent mad
             data, it's usually a good idea for your function to also take the
@@ -81,7 +81,7 @@ class markdown(handler):
 
         _markdown_tag_plugins[tag] = (make_tag_regex(tag), make_tag_func(func))
 
-    def _do_markdown_tag_plugins(text):
+    def _do_markdown_tag_plugins(self, text):
 
         def do_tag(partial_text, (plugin_regex, plugin_func)):
             return re.sub(plugin_regex, plugin_func, partial_text)
@@ -109,7 +109,7 @@ class markdown(handler):
         # So we don't polute our mutable friend:
         my_context = dict(context.items() + metadata.items())
 
-        m = markdown2.markdown(_do_markdown_tag_plugins(text), \
+        m = markdown2.markdown(self._do_markdown_tag_plugins(text), \
                                extras=['metadata'], link_patterns=link_patterns)
 
         # These before metadata, so they're overridable.

@@ -86,7 +86,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 def exclude_test(filename):
     if filename.startswith('.git') \
     or filename.endswith('.swp') \
-    or filename == '.DS_Store' \ #OSX thumbnail cache
+    or filename == '.DS_Store' \
     or filename.startswith(_HIDE_ME_PREFIX):
         return False
     else:

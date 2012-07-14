@@ -57,21 +57,21 @@ class memoize(object):
 class handler(object):
     #required methods for handlers to define:
     # run(self, inputfile, outputfile, context)
-    # make_outputfile_name(self, filename, context)
+    # make_outputfile_name(self, inputfile, context)
  
-    def make_outputfile_name(self, filename, context):
-        return os.path.join(context['_output_dir'], filename)
+    def make_outputfile_name(self, inputfile, context):
+        return os.path.join(context['_output_dir'], inputfile)
 
     def file_done(self, inputfile, outputfile, context):
         return file_newer_than(inputfile, outputfile)
 
     def process_file(self, inputfile, context):
-        outputfile = self.make_outputfile_name(filename, context)
+        outputfile = self.make_outputfile_name(inputfile, context)
 
         if self.file_done(inputfile, outputfile, context):
             return
 
-        logging.info(''.join([self.__class__.__name__,':',inputfile,'->' outputfile]))
+        logging.info(''.join([self.__class__.__name__,':',inputfile,'->', outputfile]))
         self.run(inputfile, outputfile, context)
 
 class external_handler(handler):
@@ -88,7 +88,7 @@ class external_handler(handler):
     # outputfile
     # context
 
-    def __init__():
+    def __init__(self):
         ''' this happens at plugin registration.  long before it sees a file! '''
         if not shell_command_exists(self.command):
             if not self.fallback:
@@ -96,11 +96,11 @@ class external_handler(handler):
             else:
                 logging.warn('You don\'t have "{}" in your $PATH. \n'
                              'so using "{}" handler instead.'.format(
-                                 command, self.fallback.__class__.__name__))
-                self.run = fallback.run
+                                 self.command, self.fallback.__class__.__name__))
+                self.run = self.fallback.run.__get__(self)
 
     def process_file(self, inputfile, context):
-        outputfile = self.make_outputfile_name(filename, context)
+        outputfile = self.make_outputfile_name(inputfile, context)
 
         if self.file_done(inputfile, outputfile, context):
             return
@@ -114,6 +114,19 @@ class external_handler(handler):
         logging.error('Oh no! you need "{}" in your $PATH!\n'
                       'So cannot process "{}".\n'.format(command, inputfile))
         exit(2) # something not found
+
+# three 'boiler plate reduction' functions:
+
+def external_print_output(*args):
+    return subprocess.check_call(args)
+
+def external_hide_output(*args):
+    noise = subprocess.check_output(args)
+
+def external_use_output(outputfile, *args):
+    with (outputfile,'w') as f:
+        subprocess.check_call(args, stdout=f)
+
 ######################################
 
 
@@ -148,13 +161,13 @@ def need_shell_command(commandname):
         print('Oh no! You need "'+ commandname+'" in you path!')
         exit(2)
 
-def readfile_with_jsonheader(filename):
+def readfile_with_jsonheader(inputfile):
     """ Load a (text) file, and if it starts with '-j-', parse until '\n---\n'
         as JSON metadata, and then return ( rest_of_the_file, metadata ), or
         if there is no -j-, return ( full_file_text, {} ) """
     context = {}
 
-    with open(filename) as f:
+    with open(inputfile) as f:
         test = f.read(3)
         if test == '-j-':
             json_data = ""
@@ -168,7 +181,7 @@ def readfile_with_jsonheader(filename):
                     try:
                         context = json.loads(json_data.strip())
                     except:
-                        raise RuntimeError('Invalid / Unhappy JSON meta data at the top of "' + filename + '"')
+                        raise RuntimeError('Invalid / Unhappy JSON meta data at the top of "' + inputfile + '"')
                     break
         else:
             f.seek(0)

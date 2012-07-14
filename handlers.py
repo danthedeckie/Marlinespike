@@ -57,11 +57,11 @@ class pngcrush(external_handler):
     fallback = copy_file
 
     def run(self, inputfile, outputfile, context):
-        noise = subprocess.check_output([self.command, inputfile, outputfile]) 
+        external_hide_output(self.command, inputfile, outputfile)
 
 class yuic_js(external_handler):
     command = 'yuic'
     fallback = copy_file
 
     def run(self, inputfile, outputfile, context):
-        subprocess.check_call([self.command, inputfile, '-o', outputfile])
+        external_print_output(self.command, inputfile, '-o', outputfile)

@@ -17,8 +17,6 @@ class lessc(external_handler):
         return context['_output_basename'] + '.css'
 
     def run(self, inputfile, outputfile, context):
-        with (outputfile, 'w') as f:
-            subprocess.check_call([self.command, inputfile], stdout=f)
-
+        external_use_output(outputfile, self.command, inputfile)
 
 context['_file_handlers']['.less'] = lessc
