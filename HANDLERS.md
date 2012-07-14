@@ -45,3 +45,19 @@ You can also define a method:
 You can return whatever filename you like.  If you don't define a *make_outputfile_name* method,
 then it will default to the same filename as the original file (although, it'll be in the output directory...)
 
+## Non-normal or non-external handlers
+
+If you don't want all the clobber normally needed with an external handlers (say you 
+want to write something funky in python) then you don't need to inherit from the 
+*external_handler* class.  for instance, here's the copy_file handler:
+
+```python
+class hardlink_file(handler):
+    def run(self, inputfile, outputfile, context):
+        os.link(inputfile, outputfile)
+```
+
+looks pretty similar.  
+
+TODO: include diagram of how handlers work, process_file (calls run), etc, show example of 
+doing really wacky stuff, etc.
