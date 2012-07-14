@@ -1,18 +1,24 @@
-""" less css plugin: 0.0.2
+""" less css plugin: 0.0.3
 
-    Note: there seem to be 2 versions of "lessc" around.  If you have the wrong one,
-    there may be problems.
+    Note: there seem to be 2 versions of "lessc" around.  If you have the wrong
+          one, there will be problems.  one returns the new CSS to stdout, the
+          other requires an inputfile and an outputfile as command arguments.  
+
+    TODO: cope with both.  should be possible by running it w/o args, and 
+          checking it's output for '>' or something like that.
 
 """
 
-@external_handler('lessc')
-def less_handler(filename, context):
-    """ LESS -> CSS converter. uses the 'lessc' compiler """
-    outputfile = context['_output_basename'] + '.css'
-    if not file_already_done(filename, outputfile):
-        logging.info("Updating:" + filename)
-        with open(outputfile, 'w') as f:
-            subprocess.check_call(['lessc', filename], stdout=f)
+class lessc(external_handler):
+    ''' lessc compiler, LESS to CSS. '''
+    command='lessc'
+
+    def make_outputfile_name(self, filename, context):
+        return context['_output_basename'] + '.css'
+
+    def run(self, inputfile, outputfile, context):
+        with (outputfile, 'w') as f:
+            subprocess.check_call([self.command, inputfile], stdout=f)
 
 
-context['_file_handlers']['.less'] = less_handler
+context['_file_handlers']['.less'] = lessc

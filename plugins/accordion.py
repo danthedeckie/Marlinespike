@@ -36,6 +36,6 @@
 def accordion_tag(text="", **kwargs):
     return "<a class=\"acchead\" href=\"#\">" + text + "</a>"
 
-handlers.register_markdown_tag_plugin('accordion',accordion_tag)
+markdown_handler.register_tag_plugin('accordion',accordion_tag)
 
 

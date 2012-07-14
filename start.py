@@ -43,17 +43,22 @@ import copy
 
 # Internal stuff
 import handlers
-from useful import endswithwhich, external_handler, file_already_done, readfile_with_jsonheader, logging
+from useful import endswithwhich, readfile_with_jsonheader, logging
 
 ################################
 # Default Settings
 ################################
 
+# markdown_handler is done like this so markdown plugins
+# can register themselves with markdown_handler.register_plugin...
+# rather than having to hunt through the _FILE_HANDLERS dict for it.
+markdown_handler = handlers.markdown()
+
 _FILE_HANDLERS = {
-    ('.markdown', '.md'): handlers.markdown_handler,
-                   '.js': handlers.yuic_js_handler,
-                  '.png': handlers.pngcrush_handler,
-                    None: handlers.copy_file  # Default
+    ('.markdown', '.md'): markdown_handler,
+                   '.js': handlers.yuic_js(),
+                  '.png': handlers.pngcrush(),
+                    None: handlers.copy_file()  # Default
     }
 
 _HIDE_ME_PREFIX = '_'
@@ -79,9 +84,9 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 
 def exclude_test(filename):
-    if filename.startswith(".git") \
-    or filename.endswith(".swp") \
-    or filename == '.DS_Store' \
+    if filename.startswith('.git') \
+    or filename.endswith('.swp') \
+    or filename == '.DS_Store' \ #OSX thumbnail cache
     or filename.startswith(_HIDE_ME_PREFIX):
         return False
     else:
@@ -103,13 +108,18 @@ def do_config(where, previous_context):
 
 def do_file(filename, context):
     root, ext = os.path.splitext(filename)
+    # dicts are mutable in python.  Make a local copy for this
+    # file, so that the handler can muck around with it and not
+    # break everything else:
     my_context = copy.deepcopy(context)
 
+    # some file-specific settings:
     my_context['_output_basename'] = os.path.join(context['_output_dir'], root)
     my_context['_input_extension'] = ext
-    #print filename
-    ff = my_context['_file_handlers']
-    ff[endswithwhich(filename, ff.keys())](filename, my_context)
+
+    # select the appropriate handler, and run with it:
+    handlers = my_context['_file_handlers']
+    handlers[endswithwhich(filename, handlers.keys())].process_file(filename, my_context)
 
 
 def do_dir(where, previous_context):

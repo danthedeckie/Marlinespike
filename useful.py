@@ -51,36 +51,69 @@ class memoize(object):
     def __repr__(self):
         return self.func.__doc__
 
-# TODO: handler 'useful' module?
-# TODO: think... this seems in some ways needlessly complex.  It does save
-#       boilerplate in the handlers file, but is there a simpler way to do
-#       this?
+# These should be somewhere else.
+# TODO: move handlers etc!
 
+class handler(object):
+    #required methods for handlers to define:
+    # run(self, inputfile, outputfile, context)
+    # make_outputfile_name(self, filename, context)
+ 
+    def make_outputfile_name(self, filename, context):
+        return os.path.join(context['_output_dir'], filename)
 
-class external_handler(object):
-    """ decorator for handlers which call external programs.  This checks if the program
-        is callable, has a fallback (to another function, usually 'copy_file') """
+    def file_done(self, inputfile, outputfile, context):
+        return file_newer_than(inputfile, outputfile)
 
-    def __init__(self, command, fallback=False):
-        if shell_command_exists(command):
-            self.fallback=False
-        else:
-            if not fallback:
-                def fail(filename, context):
-                    logging.error('Oh no! You need "{}" in your $PATH!\n'
-                          'So cannot process "{}".\n'.format(command,filename))
-                    exit(2)
-                self.fallback=fail
+    def process_file(self, inputfile, context):
+        outputfile = self.make_outputfile_name(filename, context)
+
+        if self.file_done(inputfile, outputfile, context):
+            return
+
+        logging.info(''.join([self.__class__.__name__,':',inputfile,'->' outputfile]))
+        self.run(inputfile, outputfile, context)
+
+class external_handler(handler):
+    fallback = False
+    # required properties by plugins:
+    # command = (something like 'pngcrush' or 'cp' ...
+
+    # requried methods:
+    # make_outputfile_name(self)
+    # run(self)
+    
+    # set by handler base-class (or over-ridden)
+    # inputfile
+    # outputfile
+    # context
+
+    def __init__():
+        ''' this happens at plugin registration.  long before it sees a file! '''
+        if not shell_command_exists(self.command):
+            if not self.fallback:
+                self.run = self.no_command
             else:
-                logging.warn('You don\'t have "{}" in your $PATH, '
-                      'so using "{}" function instead.'.format(command,fallback.func_name))
-                self.fallback=fallback
+                logging.warn('You don\'t have "{}" in your $PATH. \n'
+                             'so using "{}" handler instead.'.format(
+                                 command, self.fallback.__class__.__name__))
+                self.run = fallback.run
 
-    def __call__(self, func):
-        # if __init__ takes arguments, we have to wrap stuff in a closure here.  stupid.
+    def process_file(self, inputfile, context):
+        outputfile = self.make_outputfile_name(filename, context)
 
-        return lambda *args, **vargs: (self.fallback if self.fallback else func)(*args, **vargs)
+        if self.file_done(inputfile, outputfile, context):
+            return
+        
+        logging.info(''.join([self.command, ':', inputfile, '->', outputfile]))
+        return self.run(inputfile, outputfile, context)
 
+
+    def no_command(self, inputfile, outputfile, context):
+        ''' this is a 'run' function for when the command isn't found. '''
+        logging.error('Oh no! you need "{}" in your $PATH!\n'
+                      'So cannot process "{}".\n'.format(command, inputfile))
+        exit(2) # something not found
 ######################################
 
 
@@ -100,14 +133,14 @@ def endswithwhich(search_in, suffixes):
     return None
 
 
-def file_already_done(original, new):
+def file_newer_than(original, new):
     """ very basic check if $new exists, or if $original is newer than $new. """
     return ((os.path.isfile(new)) and
             os.path.getmtime(original) <= os.path.getmtime(new))
 
 @memoize
 def shell_command_exists(commandname):
-    # there's probably a better / faster way to do this.
+    # TODO: there's probably a better / faster way to do this.
     return commands.getoutput('which ' + commandname) != ''
 
 def need_shell_command(commandname):

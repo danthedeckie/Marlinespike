@@ -1,4 +1,4 @@
-""" image_magick plugin: v.0.2
+""" image_magick plugin: v.0.3
 
     Example: 
     
@@ -35,25 +35,31 @@
 
 """
 
-@external_handler('convert',handlers.copy_file)
-def image_magick(filename, context):
-    if not 'image_magick' in context:
-        return handlers.copy_file(filename, context)
+class image_magick(external_handler):
+    command='convert'
 
-    for conversion in context['image_magick']:
-        if conversion == "copy_originals":
-            handlers.copy_file(filename, context)
-            continue
+    def process_file(self, filename, context):
 
-        outputdir = os.path.join(context['_output_dir'], conversion['destination'])
-        outputfile = os.path.join(outputdir,  filename)
-        if not os.path.isdir(outputdir):
-            os.makedirs(outputdir)
-        elif os.path.isfile(outputfile):
-            # TODO - caching and mtime testing, etc.
-            continue
+        # only run if image_magick has been specified in a dir context.
+        # say the 'photos/' dir, so it will create the thumbnails (say)
 
-        subprocess.check_call(['convert','-resize', conversion['resize'], filename, 
-            outputfile])
+        if not 'image_magick' in context:
+            return handlers.copy_file.process_file(filename, context)
+
+        for conversion in context['image_magick']:
+            if conversion == "copy_originals":
+                handlers.copy_file.process_file(filename, context)
+                continue
+
+            outputdir = os.path.join(context['_output_dir'], conversion['destination'])
+            outputfile = os.path.join(outputdir,  filename)
+            if not os.path.isdir(outputdir):
+                os.makedirs(outputdir)
+            elif os.path.isfile(outputfile):
+                # TODO - caching and mtime testing, etc.
+                continue
+
+            subprocess.check_call(['convert','-resize', conversion['resize'], filename, 
+                outputfile])
 
 context['_file_handlers']['.jpg'] = image_magick
