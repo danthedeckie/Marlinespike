@@ -11,13 +11,14 @@ also in handlers.py are a couple of standard ones.
 
 Here is the "yuic" compressor for javascript files:
 
-> class yuic_js(external_handler):
->    command = 'yuic'
->    fallback = copy_file
->
->    def run(self, inputfile, outputfile, context):
-        external_print_output(self.command, inputfile, '-o', outputfile)
+```python
+class yuic_js(external_handler):
+   command = 'yuic'
+   fallback = copy_file
 
+   def run(self, inputfile, outputfile, context):
+      external_print_output(self.command, inputfile, '-o', outputfile)
+```
 
 which is fairly simple.  here is the rundown:
 
@@ -36,8 +37,10 @@ which is fairly simple.  here is the rundown:
 
 You can also define a method:
 
->    def make_outputfile_name(self, filename, context):
->        return context['_output_basename'] + '.css'
+```python
+   def make_outputfile_name(self, filename, context):
+       return context['_output_basename'] + '.css'
+```
 
 You can return whatever filename you like.  If you don't define a *make_outputfile_name* method,
 then it will default to the same filename as the original file (although, it'll be in the output directory...)
