@@ -1,0 +1,12 @@
+Marlinespike (C)2012 Daniel Fairhead, Licence is GPL3.  Check COPYING for that.
+
+Other projects are included (binary only) in 
+
+plugins/external/
+
+(google's closure compiler, etc)
+
+these are released under their own licences, 
+with their own copyright info which is in the appropriate folders.
+Of course I'm not claiming authorship of them.  I just include them for
+ease of use.

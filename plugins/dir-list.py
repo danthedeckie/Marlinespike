@@ -15,6 +15,6 @@ def dir_pages(where=".", files="*.markdown", html='', **kwargs):
         text += html.format(url=page.replace(".markdown",".html"), name=name)
     return text
 
-markdown_handlers.register_tag_plugin('dir',dir_pages)
+markdown_handler.register_tag_plugin('dir',dir_pages)
 
 

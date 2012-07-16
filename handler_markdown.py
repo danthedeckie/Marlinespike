@@ -43,18 +43,11 @@ def _get_template(name, context):
             _markdown_templates[inputfile] = new_template
             return new_template
         else:
-            raise RuntimeError('template "' + inputfile + '" not found.')
+            raise IOError('template "' + inputfile + '" not found.')
 
 _markdown_tag_plugins = {}
 _post_markdown_plugins = {}
 
-__inside_tag_regex = re.compile("\s(?P<key>\S*)\s*=\s*[\"'](?P<val>[^\"']+)")
-# TODO: fix
-# ^^^ bug is here.
-# maybe something to do with
-# \"(\\.|[^\"])*\"
-# or some ideas from 
-# http://stackoverflow.com/questions/249791/regex-for-quoted-string-with-escaping-quotes
 
 
 class markdown(handler):
@@ -71,6 +64,14 @@ class markdown(handler):
             catchall *kwargs as well.  """
         def make_tag_regex(tag):
             return re.compile("<%\s*" + tag + "(.*?)%>")
+
+        __inside_tag_regex = re.compile("\s(?P<key>\S*)\s*=\s*[\"'](?P<val>[^\"']+)")
+        # TODO: fix
+        # ^^^ bug is here.
+        # maybe something to do with
+        # \"(\\.|[^\"])*\"
+        # or some ideas from 
+        # http://stackoverflow.com/questions/249791/regex-for-quoted-string-with-escaping-quotes
 
         def make_tag_func(func):
             # This returns an anonymous function which takes each of the (key,value) pairs 

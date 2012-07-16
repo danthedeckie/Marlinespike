@@ -12,6 +12,8 @@
 - figuring out plugin hooks & best practices
   + move "sections" support to a plugin?
 - error handling and catching
+- changing 'yuic' etc into java calls? is this a good idea?
+  (so java -jar plugins/external/blah.jar) 
 - documentation!!!
 
 ## Next
