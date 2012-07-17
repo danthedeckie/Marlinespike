@@ -44,11 +44,11 @@ class image_magick(external_handler):
         # say the 'photos/' dir, so it will create the thumbnails (say)
 
         if not 'image_magick' in context:
-            return handlers.copy_file.process_file(filename, context)
+            return cargo.copy_file.process_file.__get__(self,cargo.copy_file)(filename, context)
 
         for conversion in context['image_magick']:
             if conversion == "copy_originals":
-                handlers.copy_file.process_file(filename, context)
+                cargo.copy_file.process_file.__get__(self,cargo.copy_file)(filename, context)
                 continue
 
             outputdir = os.path.join(context['_output_dir'], conversion['destination'])
@@ -62,4 +62,4 @@ class image_magick(external_handler):
             subprocess.check_call(['convert','-resize', conversion['resize'], filename, 
                 outputfile])
 
-context['_file_handlers']['.jpg'] = image_magick
+context['_file_handlers']['.jpg'] = image_magick()

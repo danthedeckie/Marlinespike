@@ -19,4 +19,4 @@ class lessc(external_handler):
     def run(self, inputfile, outputfile, context):
         external_use_output(outputfile, self.command, inputfile)
 
-context['_file_handlers']['.less'] = lessc
+context['_file_handlers']['.less'] = lessc()
