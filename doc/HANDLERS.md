@@ -1,4 +1,11 @@
 ## Handlers, and how they work:
+---
+To keep the sea-faring metaphor going a little longer, file-handlers are called
+cargo-handlers in marlinespike.  WHY!?!? you may ask, well, firstly it keeps
+the name a little less generic and vague, and secondly, I think it is a little
+cooler.
+---
+
 
 A handler is a simple plugin to marlinespike which 'handles' an input file.
 
@@ -9,15 +16,15 @@ the plugins/less.py file is an example of this.
 
 also in handlers.py are a couple of standard ones.
 
-Here is the "yuic" compressor for javascript files:
+Here is the "pngcrush" compressor for javascript files:
 
 ```python
-class yuic_js(external_handler):
-   command = 'yuic'
+class pngcrush(external_handler):
+   command = 'pngcrush'
    fallback = copy_file
 
    def run(self, inputfile, outputfile, context):
-      external_print_output(self.command, inputfile, '-o', outputfile)
+      external_hide_output(self.command, inputfile, outputfile)
 ```
 
 which is fairly simple.  here is the rundown:
@@ -52,7 +59,7 @@ want to write something funky in python) then you don't need to inherit from the
 *external_handler* class.  for instance, here's the copy_file handler:
 
 ```python
-class hardlink_file(handler):
+class hardlink_file(cargo_handler):
     def run(self, inputfile, outputfile, context):
         os.link(inputfile, outputfile)
 ```
@@ -61,3 +68,4 @@ looks pretty similar.
 
 TODO: include diagram of how handlers work, process_file (calls run), etc, show example of 
 doing really wacky stuff, etc.
+
