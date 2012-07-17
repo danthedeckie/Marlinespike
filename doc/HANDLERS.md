@@ -34,7 +34,7 @@ which is fairly simple.  here is the rundown:
 *command* is the program you want to use.  marlinespike will first check to see if it can find it,
   if not, then it will fall back to the fallback handler. (if you don't define a fallback, then
   when marlinespike encounters a file that needs this handler, it will fail with an error explaining
-  the situation).  In our example, yuic is merely compressing the data, so if it can't find it,
+  the situation).  In our example, pngcrush is merely compressing the data, so if it can't find it,
   it will just copy the original file instead.  You do need to define a command, however.
 
 *run* is a method which you need to define. It is what will actually get called.
