@@ -1,0 +1,1 @@
+execfile('../../plugins/yuic.py')

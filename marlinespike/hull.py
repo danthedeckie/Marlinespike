@@ -1,4 +1,4 @@
-#!/opt/local/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """  Marlinespike static site generator
@@ -24,6 +24,11 @@
      stuff.  You only need to think about this stuff if you plan to redistribute
      Marlinespike itself)
 
+---
+
+hull.py is kind of the main base that everything sits on.  We're not talking
+  about funky math shapes here, this is a hull as in a ship's hull.
+
 """
 
 
@@ -42,8 +47,10 @@ import subprocess  # needed for most plugins.
 import copy
 
 # Internal stuff
-import handlers
-from useful import endswithwhich, readfile_with_jsonheader, logging
+import cargo
+from cargo import *
+from cargo.markdown_handler import markdown
+from useful import endswithwhich, readfile_with_jsonheader, logging, exclude_test
 
 ################################
 # Default Settings
@@ -52,13 +59,12 @@ from useful import endswithwhich, readfile_with_jsonheader, logging
 # markdown_handler is done like this so markdown plugins
 # can register themselves with markdown_handler.register_plugin...
 # rather than having to hunt through the _FILE_HANDLERS dict for it.
-markdown_handler = handlers.markdown()
+markdown_handler = markdown()
 
 _FILE_HANDLERS = {
     ('.markdown', '.md'): markdown_handler,
-                   '.js': handlers.yuic_js(),
-                  '.png': handlers.pngcrush(),
-                    None: handlers.copy_file()  # Default
+                  '.png': cargo.pngcrush(),
+                    None: cargo.copy_file()  # Default
     }
 
 _HIDE_ME_PREFIX = '_'
@@ -77,21 +83,6 @@ _DEFAULT_CONFIG = {
 
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-
-##############################
-# Function helpers
-##############################
-
-
-def exclude_test(filename):
-    if filename.startswith('.git') \
-    or filename.endswith('.swp') \
-    or filename == '.DS_Store' \
-    or filename.startswith(_HIDE_ME_PREFIX):
-        return False
-    else:
-        return True
-
 
 #############################
 # The big 3
@@ -137,7 +128,7 @@ def do_dir(where, previous_context):
     elif not os.path.isdir(context['_output_dir']):
         os.rename(context['_output_dir'], context['_output_dir'] + '.prev')
 
-    for filename in filter(exclude_test, listdir('.')):
+    for filename in filter(lambda x:exclude_test(x,_HIDE_ME_PREFIX), listdir('.')):
 
         if os.path.isfile(filename):
             do_file(filename, context)

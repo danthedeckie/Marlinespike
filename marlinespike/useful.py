@@ -16,6 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with Marlinespike.  If not, see <http://www.gnu.org/licenses/>.
 
+    ---
+
+
 """
 
 import os.path
@@ -26,9 +29,12 @@ import json
 # TODO: sort this out.  I'm sure there is a better way to use this module.
 logging.basicConfig(level=logging.DEBUG)
 # a bit hacky colouring the output
-logging.addLevelName( logging.WARNING, "\033[1;31m%s\033[1;m" % logging.getLevelName(logging.WARNING))
-logging.addLevelName( logging.ERROR, "\033[1;41m%s\033[1;m" % logging.getLevelName(logging.ERROR))
-logging.addLevelName( logging.INFO, "\033[0;m%s" % logging.getLevelName(logging.INFO))
+logging.addLevelName( logging.WARNING, 
+    "\033[1;31m%s\033[1;m" % logging.getLevelName(logging.WARNING))
+logging.addLevelName( logging.ERROR, 
+    "\033[1;41m%s\033[1;m" % logging.getLevelName(logging.ERROR))
+logging.addLevelName( logging.INFO,
+    "\033[0;m%s" % logging.getLevelName(logging.INFO))
 
 ################################
 # Generic(ish) Useful Functions
@@ -51,85 +57,6 @@ class memoize(object):
     def __repr__(self):
         return self.func.__doc__
 
-# These should be somewhere else.
-# TODO: move handlers etc!
-
-class handler(object):
-    #required methods for handlers to define:
-    # run(self, inputfile, outputfile, context)
-    # make_outputfile_name(self, inputfile, context)
- 
-    def make_outputfile_name(self, inputfile, context):
-        return os.path.join(context['_output_dir'], inputfile)
-
-    def file_done(self, inputfile, outputfile, context):
-        return file_newer_than(inputfile, outputfile)
-
-    def process_file(self, inputfile, context):
-        outputfile = self.make_outputfile_name(inputfile, context)
-
-        if self.file_done(inputfile, outputfile, context):
-            return
-
-        logging.info(''.join([self.__class__.__name__,':',inputfile,'->', outputfile]))
-        self.run(inputfile, outputfile, context)
-
-class external_handler(handler):
-    fallback = False
-    # required properties by plugins:
-    # command = (something like 'pngcrush' or 'cp' ...
-
-    # requried methods:
-    # make_outputfile_name(self)
-    # run(self)
-    
-    # set by handler base-class (or over-ridden)
-    # inputfile
-    # outputfile
-    # context
-
-    def __init__(self):
-        ''' this happens at plugin registration.  long before it sees a file! '''
-        if not shell_command_exists(self.command):
-            if not self.fallback:
-                self.run = self.no_command
-            else:
-                logging.warn('You don\'t have "{}" in your $PATH. \n'
-                             'so using "{}" handler instead.'.format(
-                                 self.command, self.fallback.__class__.__name__))
-                self.run = self.fallback.run.__get__(self)
-
-    def process_file(self, inputfile, context):
-        outputfile = self.make_outputfile_name(inputfile, context)
-
-        if self.file_done(inputfile, outputfile, context):
-            return
-        
-        logging.info(''.join([self.command, ':', inputfile, '->', outputfile]))
-        return self.run(inputfile, outputfile, context)
-
-
-    def no_command(self, inputfile, outputfile, context):
-        ''' this is a 'run' function for when the command isn't found. '''
-        logging.error('Oh no! you need "{}" in your $PATH!\n'
-                      'So cannot process "{}".\n'.format(command, inputfile))
-        exit(2) # something not found
-
-# three 'boiler plate reduction' functions:
-
-def external_print_output(*args):
-    return subprocess.check_call(args)
-
-def external_hide_output(*args):
-    noise = subprocess.check_output(args)
-
-def external_use_output(outputfile, *args):
-    with (outputfile,'w') as f:
-        subprocess.check_call(args, stdout=f)
-
-######################################
-
-
 
 def endswithwhich(search_in, suffixes):
     """ Takes a string and a list of suffixes to test against.
@@ -144,6 +71,16 @@ def endswithwhich(search_in, suffixes):
     elif type(suffixes) is str:
         return suffixes if search_in.endswith(suffixes) else None
     return None
+
+
+def exclude_test(filename, hide_prefix):
+    if filename.startswith('.git') \
+    or filename.endswith('.swp') \
+    or filename == '.DS_Store' \
+    or filename.startswith(hide_prefix):
+        return False
+    else:
+        return True
 
 
 def file_newer_than(original, new):

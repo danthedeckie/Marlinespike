@@ -24,8 +24,8 @@ libraries.
 Writing a new plugin for Jekyll to simply throw .less files at lessc ended up being
 20 or so lines of boilerplate, subclassing stuff and generally was a bit of a pain.
 
-I want plugins to be *incredibly* simple to write.  There should be as little boilerplate
-as possible.
+I want plugins to be *incredibly* simple to write.  There should be as little 
+boilerplate as possible. Preferably none.
 
 ## Status:
 
