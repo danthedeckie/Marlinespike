@@ -1,9 +1,11 @@
 ## Handlers, and how they work:
 ---
+
 To keep the sea-faring metaphor going a little longer, file-handlers are called
 cargo-handlers in marlinespike.  WHY!?!? you may ask, well, firstly it keeps
 the name a little less generic and vague, and secondly, I think it is a little
 cooler.
+
 ---
 
 
