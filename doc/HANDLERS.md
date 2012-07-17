@@ -18,7 +18,7 @@ the plugins/less.py file is an example of this.
 
 also in handlers.py are a couple of standard ones.
 
-Here is the "pngcrush" compressor for javascript files:
+Here is the "pngcrush" compressor for png image files:
 
 ```python
 class pngcrush(external_handler):
