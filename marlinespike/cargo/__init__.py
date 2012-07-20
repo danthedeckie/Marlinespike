@@ -31,9 +31,8 @@ import os.path
 import shutil
 import subprocess  # for external commands.
 from marlinespike.useful import *
-#from markdown_handler import markdown
 
-class cargo_handler(object):
+class CargoHandler(object):
     #required methods for cargo handlers to define:
     # run(self, inputfile, outputfile, context)
     # make_outputfile_name(self, inputfile, context)
@@ -53,7 +52,7 @@ class cargo_handler(object):
         logging.info(''.join([self.__class__.__name__,':',inputfile,'->', outputfile]))
         self.run(inputfile, outputfile, context)
 
-class external_handler(cargo_handler):
+class ExternalHandler(CargoHandler):
     fallback = False
     # required properties by plugins:
     # command = (something like 'pngcrush' or 'cp' ...
@@ -113,11 +112,11 @@ def external_use_output(outputfile, *args):
 
 
 
-class echo_inputfile(cargo_handler):
+class echo_inputfile(CargoHandler):
     def run(self, inputfile, outputfile, context):
         print os.path.join(context['_output_dir'], inputfile)
 
-class copy_file(cargo_handler):
+class copy_file(CargoHandler):
     def run(self, inputfile, outputfile, context):
         shutil.copy2(inputfile, outputfile)
 
@@ -126,11 +125,11 @@ class copy_file(cargo_handler):
 #       stage, post-marlinespike.  we don't want the source files being messed up
 #       by that.
 
-class hardlink_file(cargo_handler):
+class hardlink_file(CargoHandler):
     def run(self, inputfile, outputfile, context):
         os.link(inputfile, outputfile)
 
-class symlink_file(cargo_handler):
+class symlink_file(CargoHandler):
     def run(self, inputfile, outputfile, context):
         os.symlink(inputfile, outputfile)
 
@@ -141,7 +140,7 @@ class symlink_file(cargo_handler):
 #
 #################
 
-class pngcrush(external_handler):
+class pngcrush(ExternalHandler):
     command = 'pngcrush'
     fallback = copy_file
 

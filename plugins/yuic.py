@@ -9,7 +9,7 @@ plugin_dir, _ = os.path.split(inspect.stack()[0][1])
 yuic_jar = os.path.abspath(os.path.join(\
     plugin_dir,'external','yuic','yuicompressor-2.4.7.jar'))
 
-class yuic_js(external_handler):
+class yuic_js(ExternalHandler):
     command = 'java'
     #fallback = copy_file
 

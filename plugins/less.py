@@ -9,7 +9,7 @@
 
 """
 
-class lessc(external_handler):
+class lessc(ExternalHandler):
     ''' lessc compiler, LESS to CSS. '''
     command='lessc'
 

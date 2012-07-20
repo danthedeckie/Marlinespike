@@ -35,7 +35,7 @@
 
 """
 
-class image_magick(external_handler):
+class image_magick(ExternalHandler):
     command='convert'
 
     def process_file(self, filename, context):

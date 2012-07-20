@@ -28,7 +28,7 @@ import os.path
 import re
 import pystache
 import markdown2
-from marlinespike.cargo import cargo_handler
+from marlinespike.cargo import CargoHandler
 from marlinespike.useful import *
 
 # from tests.
@@ -73,7 +73,7 @@ _post_markdown_plugins = {}
 
 
 
-class markdown(cargo_handler):
+class markdown(CargoHandler):
     def make_outputfile_name(self, inputfile, context):
         return context['_output_basename'] + '.html'
 

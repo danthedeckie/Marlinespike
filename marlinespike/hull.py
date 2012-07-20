@@ -34,8 +34,8 @@ hull.py is kind of the main base that everything sits on.  We're not talking
 
 import sys                       # For UTF-8 settings.
 reload(sys)                      # Stupid hack to re-apply UTF-8 if it
-                                 #     wasn't loaded originally.
-sys.setdefaultencoding('utf-8')  #     Oh for Py3k everywhere.
+                                 # - wasn't loaded originally.
+sys.setdefaultencoding('utf-8')  # - Oh for Py3k everywhere.
 
 
 # External Libs
@@ -47,10 +47,10 @@ import subprocess  # needed for most plugins.
 import copy
 
 # Internal stuff
-import cargo
-from cargo import *
-from cargo.markdown_handler import markdown
-from useful import endswithwhich, readfile_with_jsonheader, logging, exclude_test
+import marlinespike.cargo as cargo
+from marlinespike.cargo import *
+from marlinespike.cargo.markdown_handler import markdown
+from marlinespike.useful import endswithwhich, readfile_with_jsonheader, logging, exclude_test
 
 ################################
 # Default Settings
@@ -128,7 +128,7 @@ def do_dir(where, previous_context):
     elif not os.path.isdir(context['_output_dir']):
         os.rename(context['_output_dir'], context['_output_dir'] + '.prev')
 
-    for filename in filter(lambda x:exclude_test(x,_HIDE_ME_PREFIX), listdir('.')):
+    for filename in filter(lambda x: exclude_test(x, _HIDE_ME_PREFIX), listdir('.')):
 
         if os.path.isfile(filename):
             do_file(filename, context)
