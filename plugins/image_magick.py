@@ -35,8 +35,9 @@
 
 """
 
-class image_magick(ExternalHandler):
+class image_magick(CargoHandler):
     command='convert'
+    copyer = cargo.copy_file()
 
     def process_file(self, filename, context):
 
@@ -44,11 +45,12 @@ class image_magick(ExternalHandler):
         # say the 'photos/' dir, so it will create the thumbnails (say)
 
         if not 'image_magick' in context:
-            return cargo.copy_file.process_file.__get__(self,cargo.copy_file)(filename, context)
+            return self.copyer.process_file(filename, context)
 
         for conversion in context['image_magick']:
             if conversion == "copy_originals":
-                cargo.copy_file.process_file.__get__(self,cargo.copy_file)(filename, context)
+                self.copyer.process_file(filename, context)
+                #shutil.copy2(inputfile, self.make_outputfile_name(self, inputfile, context))
                 continue
 
             outputdir = os.path.join(context['_output_dir'], conversion['destination'])
