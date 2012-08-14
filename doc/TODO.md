@@ -11,6 +11,8 @@
 
 - figuring out plugin hooks & best practices
   + move "sections" support to a plugin?
+- plugins should be called with 'marlinespike_plugin(...)' rather than *stupid* execfile
+  stuff in _config.py
 - error handling and catching
 - changing 'yuic' etc into java calls? is this a good idea?
   (so java -jar plugins/external/blah.jar) 
