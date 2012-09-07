@@ -90,7 +90,7 @@ class ExternalHandler(CargoHandler):
     def no_command(self, inputfile, outputfile, context):
         ''' this is a 'run' function for when the command isn't found. '''
         logging.error('Oh no! you need "{}" in your $PATH!\n'
-                      'So cannot process "{}".\n'.format(command, inputfile))
+                      'So cannot process "{}".\n'.format(self.command, inputfile))
         exit(2) # something not found
 
 # three 'boiler plate reduction' functions:
@@ -102,7 +102,7 @@ def external_hide_output(*args):
     noise = subprocess.check_output(args)
 
 def external_use_output(outputfile, *args):
-    with (outputfile,'w') as f:
+    with open(outputfile,'w') as f:
         subprocess.check_call(args, stdout=f)
 
 ######################################

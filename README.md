@@ -38,6 +38,7 @@ still a lot of cleaning up and polishing needed before 'production ready'.
 - pystache (for templating) (easy_install pystache)
 - markdown2 (for markdown files) (easy_install markdown2)
 - lessc (if you want to use the less to css plugin)
+- pyscss (if you want to use the scss plugin)
 - yuic (if you want to use the javascript/css minifier plugin)
 - image-magick (if you want to use the image_magick plugin)
 
