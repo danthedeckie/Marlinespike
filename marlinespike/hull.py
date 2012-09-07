@@ -118,6 +118,11 @@ def do_dir(where, previous_context):
     chdir(where)
     context = do_config(where, previous_context)
 
+    if not '_base_path' in context:
+        context['_base_path'] = ''
+    else:
+        context['_base_path'] += '../'
+
     context['_output_dir'] = context.pop('_output_dir', os.path.join(context['_parent_output_dir'], where))
 
     if os.path.exists('_config.py'):
