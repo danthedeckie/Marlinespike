@@ -12,3 +12,7 @@ each directory can override / add to previous (parent) settings with their own "
 - ### "_template_dir"
   where templates(usually .md) can be found.  I recommend that you use one _template_dir
   for the whole site, and then reference templates
+
+- ### "_base_path"
+  a relative link to the root directory of the project. (so in a subdirectory, it will
+  be '../' in the root directory it'll be blank, and so on.
