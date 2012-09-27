@@ -50,6 +50,12 @@ _markdown_renderer = pystache.Renderer()
 _markdown_templates = {}
 
 def _get_template(name, context):
+
+    if name == None:
+        # if no template selected, return an empty one (rather than crashing)
+        logging.info('Using blank/no template for {0}'.format( context['_output_basename']))
+        return '{{{ body }}}'
+
     inputfile = os.path.join(context['_template_dir'], name + context['_template_extn'])
 
     if inputfile in _markdown_templates:
@@ -166,5 +172,5 @@ class markdown(CargoHandler):
         # And write the file:
 
         with open(outputfile, 'w') as f:
-            f.write(pystache.render(_get_template(my_context['template'], my_context), \
+            f.write(pystache.render(_get_template(my_context.get('template', None), my_context), \
                                     my_context))
