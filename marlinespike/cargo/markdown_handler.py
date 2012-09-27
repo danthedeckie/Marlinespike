@@ -28,6 +28,8 @@ import os.path
 import re
 import pystache
 import markdown2
+from HTMLParser import HTMLParser
+
 from marlinespike.cargo import CargoHandler
 from marlinespike.useful import *
 
@@ -41,6 +43,20 @@ link_patterns = [
     # Match a wiki page link LikeThis.
     (re.compile(r"(\b[A-Z][a-z]+[A-Z]\w+\b)"), r"/\1")
     ]
+
+########
+# Epicly simple markdown 'plugin' system parser (hurrah for python batteries included)
+########
+
+class TagPluginParser(HTMLParser):
+    def __init__(self):
+        self.attributes = {}
+        HTMLParser.__init__(self)
+
+    def handle_starttag(self, tag, attrs):
+        # is there a better way to do this?
+        self.attributes = {k:v for k,v in attrs}
+
 
 _markdown_renderer = pystache.Renderer()
 
@@ -94,20 +110,16 @@ class markdown(CargoHandler):
         def make_tag_regex(tag):
             return re.compile("<%\s*" + tag + "(.*?)%>")
 
-        __inside_tag_regex = re.compile("\s(?P<key>\S*)\s*=\s*[\"'](?P<val>[^\"']+)")
-        # TODO: fix
-        # ^^^ bug is here.
-        # maybe something to do with
-        # \"(\\.|[^\"])*\"
-        # or some ideas from 
-        # http://stackoverflow.com/questions/249791/regex-for-quoted-string-with-escaping-quotes
+        def parse_plugindata(tag_data):
+            parser = TagPluginParser()
+            parser.feed('<PLUGIN ' + tag_data + ' />')
+            return parser.attributes
 
         def make_tag_func(func):
-            # This returns an anonymous function which takes each of the (key,value) pairs 
-            # returned from the regex, and turns it into a dict, which it then passes as 
+            # This returns an anonymous function which takes each of the (key,value) pairs
+            # returned from the regex, and turns it into a dict, which it then passes as
             # named arguments to func.
-            return lambda x: func(**{k: v for k, v in
-                re.findall(__inside_tag_regex, x.groups()[0].__str__())})
+            return lambda x: func(**parse_plugindata(x.groups()[0].__str__()))
 
         _markdown_tag_plugins[tag] = (make_tag_regex(tag), make_tag_func(func))
 
@@ -117,7 +129,7 @@ class markdown(CargoHandler):
             return re.sub(plugin_regex, plugin_func, partial_text)
 
         return reduce(do_tag, _markdown_tag_plugins.values(), text)
- 
+
 
     def process_file(self, inputfile, context):
         outputfile = self.make_outputfile_name(inputfile, context)
