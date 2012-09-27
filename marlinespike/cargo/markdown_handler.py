@@ -111,14 +111,16 @@ class markdown(CargoHandler):
             return re.compile("<%\s*" + tag + "(.*?)%>")
 
         def parse_plugindata(tag_data):
+            """ takes a key='value' type html tag attributes string, and returns a
+              dict {key:value} """
             parser = TagPluginParser()
             parser.feed('<PLUGIN ' + tag_data + ' />')
             return parser.attributes
 
         def make_tag_func(func):
-            # This returns an anonymous function which takes each of the (key,value) pairs
-            # returned from the regex, and turns it into a dict, which it then passes as
-            # named arguments to func.
+            # This returns an anonymous function which takes a regex-parsed 'groups'
+            # (all the <% plugin ...BLAH... %> bits for this plugin) and returns
+            # a dict of keys & values within '...BLAH...'
             return lambda x: func(**parse_plugindata(x.groups()[0].__str__()))
 
         _markdown_tag_plugins[tag] = (make_tag_regex(tag), make_tag_func(func))
