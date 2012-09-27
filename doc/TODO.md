@@ -7,8 +7,16 @@
 
 - figuring out plugin hooks & best practices
   + move "sections" support to a plugin?
+  + multi-line tag plugins?  again maybe with regex + HTMLParser? So multi-line regex
+    it into tag_attributes + data, HTMLParser the tag_attributes, and then send the
+    parsed attributes dict + data to the plugin function?
+
+  + functions vs. classes... maybe it would actually be better to have all plugins
+    as full classes rather than the simple ones being just functions?  Then the register
+    function would raise the simple functions into the plugin class (or could be done
+    with @decorators... but that would be less beautiful).
 - plugins should be called with 'marlinespike_plugin(...)' rather than *stupid* execfile
-  stuff in _config.py
+  stuff in _config.py, or preferably from the config.json?
 - error handling and catching
 - changing 'yuic' etc into java calls? is this a good idea?
   (so java -jar plugins/external/blah.jar) 
@@ -21,7 +29,6 @@
 - blog "year/date/title" type of stuff
 - auto-run on changes
 - jslint on json fail (part of error handling?)
-- yuic javascript/css minifier plugin
 - href="{{ _base_path }}blah" is very ugly.  Could there be an automatic
   base-path thing?  Either being very clever, and being truely automatic,
   or else (local:blah) or something?  That could actually get rid of needing
