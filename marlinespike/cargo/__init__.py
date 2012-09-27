@@ -36,7 +36,7 @@ class CargoHandler(object):
     #required methods for cargo handlers to define:
     # run(self, inputfile, outputfile, context)
     # make_outputfile_name(self, inputfile, context)
- 
+
     def make_outputfile_name(self, inputfile, context):
         return os.path.join(context['_output_dir'], inputfile)
 
@@ -49,7 +49,7 @@ class CargoHandler(object):
         if self.file_done(inputfile, outputfile, context):
             return
 
-        logging.info(''.join([self.__class__.__name__,':',inputfile,'->', outputfile]))
+        logging.info(''.join([self.__name__,':',inputfile,'->', outputfile]))
         self.run(inputfile, outputfile, context)
 
 class ExternalHandler(CargoHandler):
@@ -60,7 +60,7 @@ class ExternalHandler(CargoHandler):
     # requried methods:
     # make_outputfile_name(self)
     # run(self)
-    
+
     # set by handler base-class (or over-ridden)
     # inputfile
     # outputfile
@@ -74,7 +74,7 @@ class ExternalHandler(CargoHandler):
             else:
                 logging.warn('You don\'t have "{}" in your $PATH. \n'
                              'so using "{}" handler instead.'.format(
-                                 self.command, self.fallback.__class__.__name__))
+                                 self.command, self.fallback.__name__))
                 self.run = self.fallback.run.__get__(self)
 
     def process_file(self, inputfile, context):
@@ -82,7 +82,7 @@ class ExternalHandler(CargoHandler):
 
         if self.file_done(inputfile, outputfile, context):
             return
-        
+
         logging.info(''.join([self.command, ':', inputfile, '->', outputfile]))
         return self.run(inputfile, outputfile, context)
 
