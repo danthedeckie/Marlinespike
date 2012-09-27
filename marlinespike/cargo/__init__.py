@@ -49,7 +49,7 @@ class CargoHandler(object):
         if self.file_done(inputfile, outputfile, context):
             return
 
-        logging.info(''.join([self.__name__,':',inputfile,'->', outputfile]))
+        logging.info(''.join([self.__class__.__name__,':',inputfile,'->', outputfile]))
         self.run(inputfile, outputfile, context)
 
 class ExternalHandler(CargoHandler):
