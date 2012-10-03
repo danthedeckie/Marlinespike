@@ -49,7 +49,7 @@ def blog_page(context):
     # open the cachefile, and dump the data.
     with open(cachefile,'wb') as f:
         if 'date' in context:
-            date = date
+            date = context['date']
         else:
             # TODO: document these!
             # format they want the date to end up:
@@ -62,7 +62,12 @@ def blog_page(context):
         full_body = context.get('body','')
         json.dump ( {
             'title': context.get('title',''),
+            'description': context.get('description',''),
+            'tags': context.get('tags',[]),
+            'category': context.get('category',''),
             'filename': context['_output_basename'] + context['_template_extn'],
+            'blog_more_text': context.get('_blog_more_text','...'),
+            'blog_more_class': context.get('_blog_more_class','blog_more'),
             'body': full_body[0:full_body.find('<!-- _BLOG_MORE -->')],
             'date': date,
             }, f)
@@ -70,6 +75,7 @@ def blog_page(context):
 def blog_listing(path="blog", template=None, context=None, **kwargs):
     global _get_template
     import json
+    import urllib
     global pystache
     posts_context = {'posts': []}
 
@@ -77,23 +83,18 @@ def blog_listing(path="blog", template=None, context=None, **kwargs):
         with open(post_cache,'rb') as f:
             posts_context['posts'].append(json.load(f))
 
+    for post in posts_context['posts']:
+        post['url'] = urllib.quote(os.path.relpath(post['filename'], context['_output_dir']))
+
     posts_context.update(context)
     return pystache.render(_get_template(template, posts_context), posts_context)
 
 
 def blog_readmore(**kwargs):
-    if 'more_class' in kwargs:
-        more_class = kwargs['more_class']
-    else:
-        more_class = kwargs['context'].get('blog_more_class','blog_more')
-
-    if 'text' in kwargs:
-        more_text = kwargs['text']
-    else:
-        more_text = kwargs['context'].get('blog_more_text','...')
-
+    ''' <% more %> is used to say that a blogpost should only continue on it's
+    'real' page, and not on listings. '''
     # TODO: return link as well! (not just text)
-    return '<a class="{0}">{1}</a><!-- _BLOG_MORE -->'.format(more_class, more_text)
+    return '<!-- _BLOG_MORE -->'
 
 markdown_handler.register_tag_plugin('more', blog_readmore)
 markdown_handler.register_tag_plugin('dir', dir_pages)

@@ -1,0 +1,6 @@
+---
+title: old page.
+---
+This is an old page.
+With no 'more' link.
+It's not very long.

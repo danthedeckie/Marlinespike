@@ -34,8 +34,7 @@ These are used by the blog plugin.
   you can trim how much of blogposts are displayed in a list (not on it's main page)
   by putting <% more %>.  Usually that's replaced as a ... 'read more' or similar.
   this lets you choose what text to have.
-  You can also choose on a per-post basis, by putting:
-  <% more text="..." %>
+  NOTE: you need to do this *yourself* in the blog listing template file. ;-)
 
 - ### "_blog_more_class"
   to make life easier, the text displayed as _blog_more_text is wrapped for you in
