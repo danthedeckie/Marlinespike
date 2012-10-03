@@ -1,1 +1,1 @@
-context['plugins'] = ['test']
+context['plugins'] = ['blog_dir']
