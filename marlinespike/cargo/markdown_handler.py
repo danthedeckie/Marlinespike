@@ -55,6 +55,7 @@ class TagPluginParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         # is there a better way to do this?
+        # NOTE: this is python2.7 only!
         self.attributes = {k:v for k,v in attrs}
 
 
