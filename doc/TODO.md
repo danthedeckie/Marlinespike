@@ -5,6 +5,7 @@
 
 ## Current projects
 
+- blogging plugin, which gives good ground for the next item:
 - figuring out plugin hooks & best practices
   + move "sections" support to a plugin?
   + multi-line tag plugins?  again maybe with regex + HTMLParser? So multi-line regex

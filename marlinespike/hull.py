@@ -95,8 +95,12 @@ def do_config(where, previous_context):
         return copy.deepcopy(previous_context)
 
     with open(previous_context['_configfile_name']) as f:
-        return dict(copy.deepcopy(previous_context).items() + json.load(f).items())
-
+        try:
+            return dict(copy.deepcopy(previous_context).items() + json.load(f).items())
+        except Exception as e:
+            logging.error('Bad JSON in file:' + previous_context['_configfile_name'])
+            logging.error(str(e.message))
+            exit(1)
 
 def do_file(filename, context):
     root, ext = os.path.splitext(filename)

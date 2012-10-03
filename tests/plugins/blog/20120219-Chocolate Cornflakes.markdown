@@ -3,7 +3,7 @@ title: Chocolate Cornflakes
 ---
 Hi, this is a page about chocolate cornflakes.
 
-<% blog_readmore %>
+<% more %>
 
 And this is more text (past the 'read more')
 

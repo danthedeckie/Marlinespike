@@ -34,7 +34,6 @@ def blog_page(context):
     global date_from_file
     from time import strftime
     import json
-    print str(context)
     # file to dump the cache into:
     cachefile = os.path.join(context['_cache_dir'],'blog.'+context['_original_inputfile'])
 
@@ -96,7 +95,7 @@ def blog_readmore(**kwargs):
     # TODO: return link as well! (not just text)
     return '<a class="{0}">{1}</a><!-- _BLOG_MORE -->'.format(more_class, more_text)
 
-markdown_handler.register_tag_plugin('blog_readmore', blog_readmore)
+markdown_handler.register_tag_plugin('more', blog_readmore)
 markdown_handler.register_tag_plugin('dir', dir_pages)
 markdown_handler.register_tag_plugin('blog_listing', blog_listing)
 #markdown_handler.register_html_site_postprocess_plugin('blog_listing', blog_listing)

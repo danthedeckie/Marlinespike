@@ -117,8 +117,10 @@ def readfile_with_jsonheader(inputfile):
                 else:
                     try:
                         context = json.loads(json_data.strip())
-                    except:
-                        raise RuntimeError('Invalid / Unhappy JSON meta data at the top of "' + inputfile + '"')
+                    except Exception as e:
+                        logging.error('Bad JSON header at the top of:' + inputfile)
+                        logging.error(str(e.message))
+                        exit(1)
                     break
         else:
             f.seek(0)
