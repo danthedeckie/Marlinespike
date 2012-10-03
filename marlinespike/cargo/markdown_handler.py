@@ -91,10 +91,17 @@ def _get_template(name, context):
         else:
             raise IOError('template "' + inputfile + '" not found.')
 
-_markdown_tag_plugins = {}
+_markdown_tag_plugins = []
 _post_markdown_plugins = {}
 
+def _make_tag_regex(tag):
+    return re.compile("<%\s*" + tag + "(.*?)%>")
 
+class MarkdownTagPlugin(object):
+    def __init__(self, tag, function):
+        self.handle_function = function
+        self.tag = tag
+        self.regex = _make_tag_regex(tag)
 
 class markdown(CargoHandler):
     def make_outputfile_name(self, inputfile, context):
@@ -104,35 +111,26 @@ class markdown(CargoHandler):
         _post_markdown_plugins[name] = func
 
     def register_tag_plugin(self, tag, func):
-        """ takes 'tag' and 'function'.  The function will be sent all values
-            in a tag as named arguments (useful), but in case you get sent mad
-            data, it's usually a good idea for your function to also take the
-            catchall *kwargs as well.  """
-        def make_tag_regex(tag):
-            return re.compile("<%\s*" + tag + "(.*?)%>")
+        _markdown_tag_plugins.append(MarkdownTagPlugin(tag, func))
 
-        def parse_plugindata(tag_data):
-            """ takes a key='value' type html tag attributes string, and returns a
-              dict {key:value} """
-            parser = TagPluginParser()
-            parser.feed('<PLUGIN ' + tag_data + ' />')
-            return parser.attributes
+    def _do_markdown_tag_plugins(self, text, context):
+        text_in_process = text
+        for tag_plugin in _markdown_tag_plugins:
+            def process (tag_data):
+                # the re.sub function sends us a weird object. we only need
+                # the internal text bit:
+                tag_internal_text = tag_data.groups()[0].__str__()
+                # takes the x="blah" bit of a tag, compiles it to a dict:
+                parser = TagPluginParser()
+                parser.feed('<PLUGIN ' + tag_internal_text + ' />')
+                # adds the context:
+                parser.attributes['context'] = context
+                # sends it all to the handler:
+                return tag_plugin.handle_function(**parser.attributes)
 
-        def make_tag_func(func):
-            # This returns an anonymous function which takes a regex-parsed 'groups'
-            # (all the <% plugin ...BLAH... %> bits for this plugin) and returns
-            # a dict of keys & values within '...BLAH...'
-            return lambda x: func(**parse_plugindata(x.groups()[0].__str__()))
+            text_in_process = re.sub(tag_plugin.regex, process, text_in_process)
 
-        _markdown_tag_plugins[tag] = (make_tag_regex(tag), make_tag_func(func))
-
-    def _do_markdown_tag_plugins(self, text):
-
-        def do_tag(partial_text, (plugin_regex, plugin_func)):
-            return re.sub(plugin_regex, plugin_func, partial_text)
-
-        return reduce(do_tag, _markdown_tag_plugins.values(), text)
-
+        return text_in_process
 
     def process_file(self, inputfile, context):
         outputfile = self.make_outputfile_name(inputfile, context)
@@ -154,7 +152,7 @@ class markdown(CargoHandler):
         # So we don't polute our mutable friend:
         my_context = dict(context.items() + metadata.items())
 
-        m = markdown2.markdown(self._do_markdown_tag_plugins(text), \
+        m = markdown2.markdown(self._do_markdown_tag_plugins(text, my_context), \
                                extras=['metadata'], link_patterns=link_patterns)
 
         # These before metadata, so they're overridable.

@@ -1,3 +1,4 @@
+---
 title: Chocolate Cornflakes
 ---
 Hi, this is a page about chocolate cornflakes.

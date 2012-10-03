@@ -75,6 +75,7 @@ _DEFAULT_CONFIG = {
           '_configfile_name': _HIDE_ME_PREFIX + 'config.json',
             '_file_handlers': _FILE_HANDLERS,
                '_output_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'site'),
+                '_cache_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'cache'),
              '_template_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'templates'),
             '_template_extn': '.html',
         '_parent_output_dir': getcwd(),
@@ -128,15 +129,21 @@ def do_dir(where, previous_context):
     if os.path.exists('_config.py'):
         execfile('_config.py')
 
+    if not os.path.exists(context['_cache_dir']):
+        os.makedirs(context['_cache_dir'])
+
     if not os.path.exists(context['_output_dir']):
         os.makedirs(context['_output_dir'])
     elif not os.path.isdir(context['_output_dir']):
         os.rename(context['_output_dir'], context['_output_dir'] + '.prev')
+        os.makedirs(context['_output_dir'])
 
+    files_list = []
     for filename in filter(lambda x: exclude_test(x, _HIDE_ME_PREFIX), listdir('.')):
 
+        # Do files after subdirectories...
         if os.path.isfile(filename):
-            do_file(filename, context)
+            files_list.append(filename)
 
         if os.path.isdir(filename):
             # TODO - think.  Is this the best place for this?  I kind of
@@ -149,10 +156,10 @@ def do_dir(where, previous_context):
             context['_parent_output_dir'] = my_parent_output_dir
             context['_output_dir'] = my_output_dir
 
+    [do_file(filename, context) for filename in files_list]
     # return to where we came from before leaving...
     # it's only polite.
     chdir(return_to)
-
 
 if __name__ == '__main__':
     do_dir(getcwd(), _DEFAULT_CONFIG)
