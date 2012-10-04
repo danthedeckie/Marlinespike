@@ -1,16 +1,55 @@
 """
-    TODO - some kind of page caching system, so the page data
-           can be read once when first needed, so I could get the metadata
-           from the pages themselves to print here, without replicating
-           effort.
-"""
+    Marlinespikes blogging system!  This is probably the most complex of the plugins
+    that you're likely to find.
 
+    TODO: filtering of posts in post_listings
+          categorizing output cachefile names.
+          removing old cache?
+          documentation on how best to use this.
+
+    Basic use:
+
+    in your _config.py:
+
+        import plugins.blog
+
+    in the directory that you want to have blog posts in, create a _config.py
+    with:
+
+        context['plugins'] = ['blog_dir']
+
+    in the page where you want a list of all blog posts:
+
+        <% blog_listing template="templatename" %>
+
+    where you set templatename to whatever template you want to use for displaying
+    posts in this page.  The template file can look something like:
+
+    {{#posts}}
+        <h3><a href="{{{url}}}">{{title}}</a></h3> - {{date}}
+        {{{ body }}}
+        <a href="{{{url}}}">{{{blog_more_text}}}</a>
+        <hr />
+    {{/posts}}
+
+
+
+"""
+from marlinespike.hull import markdown_handler
+from marlinespike.cargo.markdown_handler import _get_template
+
+from time import strptime, gmtime, strftime
+from glob import glob
+import os
+import json
+import json
+from urllib import quote
+import pystache
 
 def date_from_file(filename, timeformat='%Y%m%d'):
     """ Tries to construct a time from a file(name).  If it can't,
     then it returns the last modified time of the file. """
 
-    from time import strptime, gmtime, strftime
     date_length = len(strftime(timeformat, gmtime()))
     try:
         return strptime(filename[0:date_length], timeformat)
@@ -25,9 +64,6 @@ def blog_page(context):
     (replace filename, of course).  Later on, once we actually want a list (say)
     of all the files, we can read the data from these dumps really quickly.
     '''
-    global date_from_file
-    from time import strftime
-    import json
     # file to dump the cache into:
     cachefile = os.path.join(context['_cache_dir'],'blog.'+context['_original_inputfile'])
 
@@ -73,10 +109,6 @@ def blog_listing(path="blog", template=None, context=None, **kwargs):
     there will also be a 'url' field, which gives a relative link from the current 
     page to the blogpost.
     """
-    from marlinespike.cargo.markdown_handler import _get_template
-    import json
-    from urllib import quote
-    import pystache
     posts_context = {'posts': []}
 
     for post_cache in glob(os.path.join(context['_cache_dir'],path+'.*')):

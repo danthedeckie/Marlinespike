@@ -1,1 +1,1 @@
-execfile('_plugins/blog.py')
+import plugins.blog

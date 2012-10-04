@@ -45,6 +45,7 @@ import json
 from glob import glob
 import subprocess  # needed for most plugins.
 import copy
+import traceback
 
 # Internal stuff
 import marlinespike.cargo as cargo
@@ -131,7 +132,22 @@ def do_dir(where, previous_context):
     context['_output_dir'] = context.pop('_output_dir', os.path.join(context['_parent_output_dir'], where))
 
     if os.path.exists('_config.py'):
-        execfile('_config.py')
+        sys.path.insert(0,os.getcwd())
+
+        # Make _plugins/ directories behave as modules:
+        # temp variables to make the next if nicer:
+        plugin_dir = _HIDE_ME_PREFIX + 'plugins'
+        plugin_modulator = os.path.join(plugin_dir, '__init__.py')
+
+        if os.path.isdir(plugin_dir) and not os.path.exists(plugin_modulator):
+            open(plugin_modulator,'wb').close()
+
+        try:
+            execfile('_config.py')
+        except Exception as e:
+            logging.error('Error with _config.py in ' + os.getcwd())
+            [logging.error(l) for l in traceback.format_exc().splitlines()]
+            exit(1)
 
     if not os.path.exists(context['_cache_dir']):
         os.makedirs(context['_cache_dir'])
