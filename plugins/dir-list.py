@@ -7,6 +7,9 @@
            from the pages themselves to print here, without replicating
            effort.
 """
+import os.path
+from glob import glob
+from marlinspike.hull import markdown_handler
 
 def dir_pages(where=".", files="*.markdown", html='', **kwargs):
     text = ""

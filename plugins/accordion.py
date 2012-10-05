@@ -32,10 +32,10 @@
     http://www.omnitube.org/
 
     """
+from marlinespike.hull import markdown_handler
+
 
 def accordion_tag(text="", **kwargs):
     return "<a class=\"acchead\" href=\"#\">" + text + "</a>"
 
 markdown_handler.register_tag_plugin('accordion',accordion_tag)
-
-

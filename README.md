@@ -31,6 +31,8 @@ boilerplate as possible. Preferably none.
 
 Basics are working, our next generation site is working with this now,
 still a lot of cleaning up and polishing needed before 'production ready'.
+_WARNING_: The plugin system is still *very much* in progress, and so probably
+won't work as expected.
 
 ## Requirements:
 
