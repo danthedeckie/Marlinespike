@@ -143,6 +143,23 @@ def do_dir(where, previous_context):
             open(plugin_modulator,'wb').close()
 
         try:
+            def do_plugin(filename):
+                #global context
+                x = __import__(filename, fromlist=True)
+                # Here is a list of plugins we import:
+                # TODO: functionise/DRY this:
+                if '_context' in dir(x):
+                    context.update(x._context)
+                if '_file_handlers' in dir(x):
+                    context['_file_handlers'].update(x._file_handlers)
+                if '_tag_plugins' in dir(x):
+                    [markdown_handler.register_tag_plugin(tag, func) \
+                        for tag, func in x._tag_plugins.items()]
+                if '_post_plugins' in dir(x):
+                    [markdown_handler.register_post_plugin(tag, func) \
+                        for tag, func in x._post_plugins.items()]
+
+
             execfile('_config.py')
         except Exception as e:
             logging.error('Error with _config.py in ' + os.getcwd())

@@ -11,4 +11,4 @@ def omnitube_tag(video='', height='338', width='600', **kwargs):
            ' src="http://www.omnitube.org/embed.php?video=' + video + ' "' \
            ' frameborder="0"></iframe></div>'
 
-markdown_handler.register_tag_plugin('OMNItube', omnitube_tag)
+_tag_plugins = {'OMNItube': omnitube_tag}

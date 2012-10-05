@@ -8,6 +8,9 @@
           checking it's output for '>' or something like that.
 
 """
+from marlinespike.hull import ExternalHandler
+from marlinespike.cargo import external_use_output
+
 
 class lessc(ExternalHandler):
     ''' lessc compiler, LESS to CSS. '''
@@ -19,4 +22,4 @@ class lessc(ExternalHandler):
     def run(self, inputfile, outputfile, context):
         external_use_output(outputfile, self.command, inputfile)
 
-context['_file_handlers']['.less'] = lessc()
+_file_handlers = {'.less': lessc()}

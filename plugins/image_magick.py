@@ -34,10 +34,15 @@
         - site level config as well as / instead of directory level
 
 """
+from marlinespike.cargo import CargoHandler, copy_file
+import subprocess
+import os
+import os.path
+
 
 class image_magick(CargoHandler):
     command='convert'
-    copyer = cargo.copy_file()
+    copyer = copy_file()
 
     def process_file(self, filename, context):
 
@@ -64,4 +69,4 @@ class image_magick(CargoHandler):
             subprocess.check_call(['convert','-resize', conversion['resize'], filename, 
                 outputfile])
 
-context['_file_handlers']['.jpg'] = image_magick()
+_file_handlers = {'.jpg': image_magick()}

@@ -11,7 +11,7 @@
 
     in your _config.py:
 
-        import plugins.blog
+        do_plugin('plugins.blog')
 
     in the directory that you want to have blog posts in, create a _config.py
     with:
@@ -35,7 +35,6 @@
 
 
 """
-from marlinespike.hull import markdown_handler
 from marlinespike.cargo.markdown_handler import _get_template
 
 from time import strptime, gmtime, strftime
@@ -135,7 +134,6 @@ def blog_readmore(**kwargs):
     by using a magic <!-- comment --> tag, which isn't great, but works just fine. '''
     return '<!-- _BLOG_MORE -->'
 
-markdown_handler.register_tag_plugin('more', blog_readmore)
-markdown_handler.register_tag_plugin('blog_listing', blog_listing)
-markdown_handler.register_post_plugin('blog_dir', blog_page)
-
+_tag_plugins = {'more': blog_readmore,
+                'blog_listing': blog_listing }
+_post_plugins = {'blog_dir' : blog_page}

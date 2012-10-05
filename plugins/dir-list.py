@@ -9,7 +9,6 @@
 """
 import os.path
 from glob import glob
-from marlinspike.hull import markdown_handler
 
 def dir_pages(where=".", files="*.markdown", html='', **kwargs):
     text = ""
@@ -18,6 +17,6 @@ def dir_pages(where=".", files="*.markdown", html='', **kwargs):
         text += html.format(url=page.replace(".markdown",".html"), name=name)
     return text
 
-markdown_handler.register_tag_plugin('dir',dir_pages)
+_tag_plugins = {'dir': dir_pages}
 
 

@@ -1,1 +1,1 @@
-import plugins.blog
+do_plugin('plugins.blog')
