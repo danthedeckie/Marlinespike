@@ -1,9 +1,11 @@
 {
-	"template" : "a",
-	"sections": [
-				{   "url" : "editing.html",
-				  "title" : "Editing" },
-				{   "url" : "programming.html",
-				  "title" : "Programming" }
-	]
+    "template" : "a",
+        "sections": [
+        {   "url" : "editing.html",
+            "title" : "Editing" },
+        {   "url" : "programming.html",
+            "title" : "Programming" },
+        {   "url" : "music/",
+            "title" : "Music" }
+    ]
 }
