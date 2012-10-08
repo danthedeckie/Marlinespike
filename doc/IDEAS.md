@@ -34,7 +34,7 @@ thoughts for how the multi-lingual plugin should work in marlinespike.
 ### On entering any translation dir:
 (Note: there is no plugin hook for this yet...)
 
-```
+```python
     for all files in original_dir but not here:
         load file from original_dir
         update file.context with context from this dir
@@ -46,13 +46,13 @@ thoughts for how the multi-lingual plugin should work in marlinespike.
 
 
 ### On entering any file in a translation dir:
-```
+```python
     # So we can have de/hilfe and de/kontakt rather than de/help and de/contact...
     counterpart = context.get('counterpart', filename)
 
-    if counterpart exists in original dir:
-        load original file
-        update file.context with context from current translation file
-        output as normal
+    if counterpart_exists in original_dir:
+        with load_file(counterpart) as file:
+            update file.context with context from current translation file
+            file.output() # as normal
 ```
 
