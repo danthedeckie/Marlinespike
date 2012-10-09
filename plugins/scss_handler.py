@@ -16,6 +16,6 @@ class scss_handler(CargoHandler):
     def run(self, inputfile, outputfile, context):
         with open(inputfile,'r') as i:
             with open(outputfile,'w') as o:
-               o.write(self.scssc.compile(i.read()))
+               o.write(scssc.compile(i.read()))
 
 _file_handlers = {'.scss': scss_handler()}

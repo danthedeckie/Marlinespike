@@ -99,7 +99,7 @@ def external_print_output(*args):
     return subprocess.check_call(args)
 
 def external_hide_output(*args):
-    noise = subprocess.check_output(args)
+    return subprocess.check_output(args)
 
 def external_use_output(outputfile, *args):
     with open(outputfile,'w') as f:
