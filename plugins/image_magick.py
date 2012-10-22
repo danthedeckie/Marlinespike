@@ -37,6 +37,7 @@
 import subprocess
 import os
 import os.path
+import logging
 
 from marlinespike.useful import need_shell_command
 from marlinespike.cargo import ExternalHandler, copy_file, external_hide_output
@@ -69,8 +70,8 @@ class image_magick(ExternalHandler):
             elif os.path.isfile(outputfile):
                 # TODO - caching and mtime testing, etc.
                 continue
-
-            external_hide_output(['convert','-resize', conversion['resize'], filename, 
-                outputfile])
+            logging.info('Compressing ' + filename)
+            external_hide_output('convert','-resize', conversion['resize'], filename, 
+                outputfile)
 
 _file_handlers = {'.jpg': image_magick()}
