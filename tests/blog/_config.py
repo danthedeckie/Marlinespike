@@ -1,1 +1,1 @@
-do_plugin('plugins.blog')
+do_plugin('plugins.blog2')
