@@ -121,10 +121,11 @@ def blog_listing(path="blog", template=None, context=None, **kwargs):
     posts_context = {'posts': []}
     cachedb = os.path.join(context['_cache_dir'],'blog.db')
 
-    with DictLiteStore(cachedb, 'pages') as s:
-        posts_context['pages'] = s.get() # TODO: filtering?
+    print "reading from: %s" % cachedb
 
-    print 'LEN: %i' % len(posts_context['posts'])
+    with DictLiteStore(cachedb, 'pages') as s:
+        posts_context['posts'] = s.get() # TODO: filtering?
+
 
     # makes a relative url from the current path to another output file:
     make_url = lambda p: quote(os.path.relpath(p, context['_output_dir']))
