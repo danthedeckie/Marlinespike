@@ -1,6 +1,0 @@
-HTML Compressor
-
-Copyright (C) 2009-2012 Sergiy Kovalchuk. All Rights Reserved.
-
-http://code.google.com/p/htmlcompressor/ 
-

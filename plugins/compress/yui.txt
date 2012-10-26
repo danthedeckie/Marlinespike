@@ -1,5 +1,0 @@
-Yahoo "YUI Compressor"
-http://developer.yahoo.com/yui/compressor/
-
-Copyright (c) 2011 Yahoo! Inc.  All rights reserved.
-BSD (revised) open source license.
