@@ -34,13 +34,16 @@
         - site level config as well as / instead of directory level
 
 """
-from marlinespike.cargo import CargoHandler, copy_file
 import subprocess
 import os
 import os.path
+import logging
+
+from marlinespike.useful import need_shell_command
+from marlinespike.cargo import ExternalHandler, copy_file, external_hide_output
 
 
-class image_magick(CargoHandler):
+class image_magick(ExternalHandler):
     command='convert'
     copyer = copy_file()
 
@@ -51,6 +54,8 @@ class image_magick(CargoHandler):
 
         if not 'image_magick' in context:
             return self.copyer.process_file(filename, context)
+
+        need_shell_command('convert')
 
         for conversion in context['image_magick']:
             if conversion == "copy_originals":
@@ -65,8 +70,8 @@ class image_magick(CargoHandler):
             elif os.path.isfile(outputfile):
                 # TODO - caching and mtime testing, etc.
                 continue
-
-            subprocess.check_call(['convert','-resize', conversion['resize'], filename, 
-                outputfile])
+            logging.info('Compressing ' + filename)
+            external_hide_output('convert','-resize', conversion['resize'], filename, 
+                outputfile)
 
 _file_handlers = {'.jpg': image_magick()}
