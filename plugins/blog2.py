@@ -38,13 +38,19 @@
 from marlinespike.cargo.markdown_handler import _get_template
 
 from time import strptime, gmtime, strftime
-from glob import glob
 import os
-import json
 from urllib import quote
 import pystache
+import logging
 
 from lib.DictLiteStore import DictLiteStore
+
+log = logging.getLogger(__file__)
+####################################################
+#
+# Functions used by the 'plugin functions' later:
+#
+####################################################
 
 def date_from_file(filename, timeformat='%Y%m%d'):
     """ Tries to construct a time from a file(name).  If it can't,
@@ -61,16 +67,19 @@ def context_to_blogcache(context):
     ''' takes a full context dict, and returns a simpler
         dict with just the data we want to put in the blog cache. '''
 
+    # format they want the date to end up:
+    blog_date_format = context.get('_blog_date_format','%Y-%m-%d')
+
     if 'date' in context:
-        date = context['date']
+        date = strptime(context['date'], blog_date_format)
+
     else:
-        # format they want the date to end up:
-        blog_date_format = context.get('_blog_date_format','%Y-%m-%d')
         # format to read from filename:
         blog_filedate_format = context.get('_blog_filedate_format', '%Y%m%d')
 
-        date = strftime(blog_date_format,
-            date_from_file(context['_original_inputfile'], blog_filedate_format))
+        date = date_from_file(context['_original_inputfile'], blog_filedate_format)
+
+    date_str = strftime(blog_date_format, date)
 
     full_body = context.get('body','')
     return {
@@ -82,8 +91,18 @@ def context_to_blogcache(context):
         'blog_more_text': context.get('_blog_more_text','...'),
         'blog_more_class': context.get('_blog_more_class','blog_more'),
         'body': full_body[0:full_body.find('<!-- _BLOG_MORE -->')],
-        'date': date,
+        'date': date_str,
+        '_searchable_date': (date.tm_year,date.tm_mon,date.tm_mday),
+        'mtime': os.path.getmtime(context['_original_inputfile']),
+        '_original_inputfile': context['_original_inputfile'],
         }
+
+
+###################################
+#
+# The actual plugin functions (entry points)
+#
+###################################
 
 def blog_page(context):
     '''
@@ -96,7 +115,9 @@ def blog_page(context):
     # file to dump the cache into:
     cachedb = os.path.join(context['_cache_dir'],'blog.db')
     key = "_original_inputfile"
-    wherekey = (key,'==', '"%s"' % context[key])
+    wherekey = (key,'==', context[key])
+    print wherekey
+    print context[key]
 
     # check if there already is an up-to-date cachefile, 
     # if so, don't bother updating it.
@@ -105,10 +126,13 @@ def blog_page(context):
 
         if c != [] and c[0]['mtime'] \
         > os.path.getmtime(context[key]):
+            log.debug('%s already in cache!', key)
             return True
 
+        log.debug ('%s not in cache, or needs to be updated.', key)
         #If we got here, then the cache needs updating.
         s.update(context_to_blogcache(context), True, wherekey)
+
 
 def blog_listing(path="blog", template=None, context=None, **kwargs):
     """
@@ -124,7 +148,7 @@ def blog_listing(path="blog", template=None, context=None, **kwargs):
     print "reading from: %s" % cachedb
 
     with DictLiteStore(cachedb, 'pages') as s:
-        posts_context['posts'] = s.get() # TODO: filtering?
+        posts_context['posts'] = s.get(order='_searchable_date') # TODO: filtering?
 
 
     # makes a relative url from the current path to another output file:
