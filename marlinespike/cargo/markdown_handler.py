@@ -59,7 +59,8 @@ class TagPluginParser(HTMLParser):
         self.attributes = {k:v for k,v in attrs}
 
 
-_markdown_renderer = pystache.Renderer()
+#TODO: This isn't needed any more?
+# _markdown_renderer = pystache.Renderer()
 
 # Here the already-loaded templates are cached.  When you '_get_template', it checks
 # here first.
@@ -79,7 +80,7 @@ def _get_template(name, context):
         return _markdown_templates[inputfile]
     else:
         if os.path.isfile(inputfile):
-            new_template, template_metadata = readfile_with_jsonheader(inputfile)
+            new_template, template_metadata = readfile_with_json_or_yaml_header(inputfile)
 
             if 'template' in template_metadata:
                 replace_string = template_metadata.get('template_replace', '{{{ body }}}')
@@ -147,7 +148,7 @@ class markdown(CargoHandler):
 
         logging.info('Updating:' + inputfile)  
         # TODO - try/finally etc.
-        text, metadata = readfile_with_jsonheader(inputfile)
+        text, metadata = readfile_with_json_or_yaml_header(inputfile)
 
         # So we don't polute our mutable friend:
         my_context = dict(context.items() + metadata.items())

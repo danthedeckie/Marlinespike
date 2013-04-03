@@ -1,3 +1,3 @@
-execfile('../../plugins/yuic.py')
-execfile('../../plugins/scss.py')
-execfile('_plugins/test.py')
+do_plugin('plugins.yuic')
+do_plugin('plugins.scss_handler')
+do_plugin('_plugins.test')

@@ -25,6 +25,7 @@ import os.path
 import commands
 import logging
 import json
+import yaml
 
 # TODO: sort this out.  I'm sure there is a better way to use this module.
 logging.basicConfig(level=logging.DEBUG)
@@ -126,4 +127,55 @@ def readfile_with_jsonheader(inputfile):
             f.seek(0)
         return (f.read(), context)
 
+def readfile_splitat(filename, breakstring, ignore_if_starts_with=True):
+    """ Read a text file, splitting at the first instance of $breakstring.
+        useful for splitting a document into header (json or yaml) and content. """
+    before_lines = []
+    with open(filename,'r') as f:
+        while True:
+            line = f.readline()
+            if not line:
+                logging.debug('end of file while still reading header!')
+                # End of File... which means that there isn't any header block!
+                return ('', ''.join(before_lines))
+            elif line != breakstring:
+                logging.debug('normal line: "%s"',line)
+                # Normal line, not the breakstring.
+                before_lines.append(line)
+            else:
+                logging.debug('other! %s', line)
+                # we've found the breakstring.
+                if ignore_if_starts_with and before_lines == []:
+                    # however, we're at the beginning of the file.  So ignore it.
+                    continue
+                # return the header as a header, and the rest as the rest.
+                return (''.join(before_lines), f.read())
 
+    raise Exception('We should never have got here. This is BAD.')
+
+def readfile_with_json_or_yaml_header(inputfile):
+    header, content = readfile_splitat(inputfile, '---\n')
+    context = {}
+    if header:
+        if header[:3] == '-j-':
+            # json header.
+            try:
+                context = json.loads(header[3:])
+                context['_metadata_type'] = 'json'
+            except Exception as e:
+                logging.error('Bad JSON header at the top of:' + inputfile)
+                logging.error(str(e.message))
+                exit(1)
+        else:
+            # maybe YAML header?
+            try:
+                context = yaml.safe_load(header)
+                context['_metadata_type'] = 'yaml'
+            except Exception as e:
+                # at this point, we have no real indication that there *is* a header.
+                # either it's malformed YAML, or else it's not a header at all, so
+                # we'll just dump it to the content, and hope it's not YAML.
+                #       return (header + content, HeaderMetaDict())
+                context.datatype = 'No JSON or YAML'
+                content = header + content
+    return (content, context)

@@ -51,7 +51,7 @@ import traceback
 import marlinespike.cargo as cargo
 from marlinespike.cargo import *
 from marlinespike.cargo.markdown_handler import markdown
-from marlinespike.useful import endswithwhich, readfile_with_jsonheader, logging, exclude_test
+from marlinespike.useful import endswithwhich, readfile_with_json_or_yaml_header, logging, exclude_test
 
 ################################
 # Default Settings
