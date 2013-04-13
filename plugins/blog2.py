@@ -1,9 +1,8 @@
 """
-    Marlinespikes blogging system!  This is probably the most complex of the plugins
+    Marlinespike's blogging system!  This is probably the most complex of the plugins
     that you're likely to find.
 
     TODO: filtering of posts in post_listings
-          categorizing output cachefile names.
           removing old cache?
           documentation on how best to use this.
 
@@ -31,6 +30,12 @@
         <a href="{{{url}}}">{{{blog_more_text}}}</a>
         <hr />
     {{/posts}}
+
+    in a 'post' file, you can put a 'read more' marker:
+
+    <% more %>
+
+    then posts displayed in a {{#posts}} block will cut off at that point.
 
 
 

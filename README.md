@@ -52,7 +52,7 @@ or whatever.  When you run setup.sh, it will tell you the correct command.
 
 ## What does the setup.sh script do?
 
-setup.sh downloads and configures a virtualenv (Python virtual environment) for marlinspike,
+setup.sh downloads and configures a virtualenv (Python virtual environment) for marlinespike,
 and will download all the required modules and put all this in a .virtualenv folder in
 the project directory.
 
