@@ -59,5 +59,8 @@ fi
 #if [[ ! -e ".git/hooks/pre-commit" ]]; then
 #    cp .setup/hooks/pre-commit .git/hooks/pre-commit
 #fi
-
+echo
+echo "--------------------------------------------------------"
 echo "Everything is done! You should be able to use ./run.sh to use Marlinespike!"
+echo "For convenience, you could create a link to run.sh by running:"
+echo "ln -s $(pwd)/run.sh /usr/local/bin/marlinespike"

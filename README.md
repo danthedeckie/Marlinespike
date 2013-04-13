@@ -35,19 +35,41 @@ still a lot of cleaning up and polishing needed before 'production ready'.
 _WARNING_: The plugin system is still *very much* in progress, and so may not
 won't work as expected.
 
-## Requirements:
+## Getting Started:
 
-As long as you have a working Python(2.7+) installation, the *setup.sh* script should
-get you up and running quickly.  It creates a virtualenv and downloads all the
-various internal python requirements.  You can then run Marlinespike by using
-the *run.sh* script.  If you want to use it from anywhere on the computer,
-you can quite happily symlink to this script.
+    ./setup.sh
+
+Should be enough for most people, and then you can call the *run.sh* script from the folder
+you want to use as your website source directory.  The setup.sh script will prompt you on
+how to install it if you want to.  Once marlinespike is considered production ready and
+stable, I will make a proper installer.
+
+You will normally want to run marlinespike from different places around your computer (from your website source directory).  Either call run.sh from there, or you can create a symlink:
 
     ln -s /home/daniel/src/Marlinespike/run.sh /usr/local/bin/marlinespike
 
-or whatever you find appropriate).
+or whatever.  When you run setup.sh, it will tell you the correct command.
 
-- Python>=2.7.  I'm working here with 2.7.3
+## What does the setup.sh script do?
+
+setup.sh downloads and configures a virtualenv (Python virtual environment) for marlinspike,
+and will download all the required modules and put all this in a .virtualenv folder in
+the project directory.
+
+The virtualenv is kept in .virtualenv, and you shouldn't have to worry about it.
+You don't need to 'enter' or 'exit' the virtualenv.
+
+## Requirements:
+
+As long as you have a working Python(2.7+) installation, the *setup.sh* script should
+get you up and running quickly.
+
+Python Modules (listed also in requirements.txt):
+
+- pystache (simple templating system)
+- markdown2 (markdown text -> html processing)
+- pyscss (SCSS -> CSS)
+- PyYAML (YAML frontmatter (a la jekyll/github)
 
 Other non-python requirements (for plugins)
 
