@@ -38,6 +38,7 @@
 from marlinespike.cargo.markdown_handler import _get_template
 
 from time import strptime, gmtime, strftime
+import datetime
 import os
 from urllib import quote
 import pystache
@@ -71,7 +72,10 @@ def context_to_blogcache(context):
     blog_date_format = context.get('_blog_date_format','%Y-%m-%d')
 
     if 'date' in context:
-        date = strptime(context['date'], blog_date_format)
+        if isinstance(context['date'], datetime.date):
+            date = context['date'].timetuple()
+        else:
+            date = strptime(context['date'], blog_date_format)
 
     else:
         # format to read from filename:
