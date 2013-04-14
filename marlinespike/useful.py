@@ -28,7 +28,8 @@ import json
 import yaml
 
 # TODO: sort this out.  I'm sure there is a better way to use this module.
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 # a bit hacky colouring the output
 logging.addLevelName( logging.WARNING,
     "\033[1;31m%s\033[0;m" % logging.getLevelName(logging.WARNING))

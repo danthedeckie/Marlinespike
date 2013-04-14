@@ -246,6 +246,31 @@ class DictLiteStore(object):
 
         return u'WHERE' + u' AND '.join(where_clauses), sql_values
 
+    def _make_order_clause(self, order_input=None):
+        if not order_input:
+            return u''
+        if not hasattr(order_input, '__iter__'):
+            # probably a string? So stuff it in a tuple.
+            order_input = (order_input,)
+
+        order_segments = []
+        for order in order_input:
+            if len(order) == 2 and (order[1] == u'ASC' or order[1] == u'DESC'):
+                log.debug('sorting by %s, %s.', order[0], order[1])
+                if order[0] in self.sql_columns:
+                    order_segments.append(cleanq(order[0]) + u' ' + order[1])
+                else:
+                    log.warn('Trying to sort (ORDER), '
+                             'but "%s" is not a column.', order[0])
+            elif order in self.sql_columns:
+                order_segments.append(cleanq(order))
+
+        if not order_segments:
+            return u''
+
+        return u'ORDER BY ' + u','.join(order_segments)
+
+
     def get(self, *args, **vargs):
         '''
         A wrapper around sqllite SELECT (makes things a little safer,
@@ -260,7 +285,7 @@ class DictLiteStore(object):
 
         '''
         # Work around python not liking *args before named args.
-        _options = {u'order': u'mtime'}
+        _options = {u'order': u'id'}
         _options.update(vargs)
 
         ####
@@ -269,14 +294,15 @@ class DictLiteStore(object):
 
         where_clause, sql_values = self._make_where_clause(*args)
 
-        # Prepare the query:
-        sql = u'SELECT * FROM \"{0}\" {1} ORDER BY ?'.format( \
-            self.table_name, where_clause)
-
         # Order by value gets tacked on the end:
-        sql_values.append(cleanq(_options[u'order']))
+        order_clause = self._make_order_clause(_options[u'order'])
 
-        log.debug ('SQL: %s DATA: %s', sql, sql_values)
+        # Prepare the query:
+        sql = u'SELECT * FROM \"{0}\" {1} {2}'.format( \
+            self.table_name, where_clause, order_clause)
+
+
+        log.debug ('SQL: %s ; DATA: %s ;', sql, sql_values)
         # Run the query, and parse the result(s).
         data = [dict(x) for x in self.cur.execute(sql, sql_values).fetchall()]
         for document in data:

@@ -42,7 +42,7 @@
 """
 from marlinespike.cargo.markdown_handler import _get_template
 
-from time import strptime, gmtime, strftime
+from time import strptime, gmtime, strftime, mktime
 import datetime
 import os
 from urllib import quote
@@ -101,8 +101,11 @@ def context_to_blogcache(context):
         'blog_more_class': context.get('_blog_more_class','blog_more'),
         'body': full_body[0:full_body.find('<!-- _BLOG_MORE -->')],
         'date': date_str,
-        '_searchable_date': (date.tm_year,date.tm_mon,date.tm_mday),
-        'mtime': os.path.getmtime(context['_original_inputfile']),
+        '_year': date.tm_year,
+        '_month': date.tm_mon,
+        '_day': date.tm_mday,
+        '_sortable_date': strftime('%Y%m%d', date),
+        'filemtime': os.path.getmtime(context['_original_inputfile']),
         '_original_inputfile': context['_original_inputfile'],
         }
 
@@ -125,15 +128,13 @@ def blog_page(context):
     cachedb = os.path.join(context['_cache_dir'],'blog.db')
     key = "_original_inputfile"
     wherekey = (key,'==', context[key])
-    print wherekey
-    print context[key]
 
     # check if there already is an up-to-date cachefile, 
     # if so, don't bother updating it.
     with DictLiteStore(cachedb, 'pages') as s:
         c = s.get(wherekey)
 
-        if c != [] and c[0]['mtime'] \
+        if c != [] and c[0]['filemtime'] \
         > os.path.getmtime(context[key]):
             log.debug('%s already in cache!', key)
             return True
@@ -143,7 +144,7 @@ def blog_page(context):
         s.update(context_to_blogcache(context), True, wherekey)
 
 
-def blog_listing(path="blog", template=None, context=None, **kwargs):
+def blog_listing(path="blog", template=None, order=(('_sortable_date',u'DESC'),), limit=None, context=None, **kwargs):
     """
     This is what actually displays the shortened list of blogposts.  You should
     specify a template.  This is used by putting a <% blog_listing template="blah" %>
@@ -154,10 +155,10 @@ def blog_listing(path="blog", template=None, context=None, **kwargs):
     posts_context = {'posts': []}
     cachedb = os.path.join(context['_cache_dir'],'blog.db')
 
-    print "reading from: %s" % cachedb
+    log.info("reading from: %s",cachedb)
 
     with DictLiteStore(cachedb, 'pages') as s:
-        posts_context['posts'] = s.get(order='_searchable_date') # TODO: filtering?
+        posts_context['posts'] = s.get(order=order) # TODO: filtering?
 
 
     # makes a relative url from the current path to another output file:
