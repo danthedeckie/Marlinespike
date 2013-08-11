@@ -21,21 +21,22 @@
 
         <% blog_listing template="templatename" %>
 
-    where you set templatename to whatever template you want to use for displaying
-    posts in this page.  The template file can look something like:
+    where you set templatename to whatever template you want to use for
+    displaying posts in this page.  The template file can look something like:
 
-    {{#posts}}
-        <h3><a href="{{{url}}}">{{title}}</a></h3> - {{date}}
-        {{{ body }}}
-        <a href="{{{url}}}">{{{blog_more_text}}}</a>
+    {% for post in posts %}
+        <h3><a href="{{post.url}}">{{post.title}}</a></h3> - {{post.date}}
+        {{ post.body }}
+        <a href="{{post.url}}">{{post.blog_more_text|safe}}</a>
         <hr />
-    {{/posts}}
+    {% endfor %}
 
     in a 'post' file, you can put a 'read more' marker:
 
     <% more %>
 
-    then posts displayed in a {{#posts}} block will cut off at that point.
+    then posts displayed in a {% for post in posts %}
+    block will cut off at that point.
 
 
 
@@ -46,7 +47,6 @@ from time import strptime, gmtime, strftime, mktime
 import datetime
 import os
 from urllib import quote
-import pystache
 import logging
 
 from lib.DictLiteStore import DictLiteStore
@@ -172,7 +172,8 @@ def blog_listing(path="blog", template=None, order=(('_sortable_date',u'DESC'),)
     posts_context.update(context)
 
     # render the output, and send it back:
-    return pystache.render(_get_template(template, posts_context), posts_context)
+    templ = _get_template(template, posts_context)
+    return templ.render(posts_context)
 
 
 def blog_readmore(**kwargs):

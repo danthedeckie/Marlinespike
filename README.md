@@ -66,7 +66,7 @@ get you up and running quickly.
 
 Python Modules (listed also in requirements.txt):
 
-- pystache (simple templating system)
+- jinja2 (fast, powerful templating system)
 - markdown2 (markdown text -> html processing)
 - pyscss (SCSS -> CSS)
 - PyYAML (YAML frontmatter (a la jekyll/github)

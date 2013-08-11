@@ -47,6 +47,12 @@ import subprocess  # needed for most plugins.
 import copy
 import traceback
 
+######################
+# TODO: experiment with these for MULTIPROCESSING!
+# from multiprocessing import Pool 
+# from itertools import izip, repeat
+######################
+
 # Internal stuff
 import marlinespike.cargo as cargo
 from marlinespike.cargo import *
@@ -118,6 +124,8 @@ def do_file(filename, context):
     handlers = my_context['_file_handlers']
     handlers[endswithwhich(filename, handlers.keys())].process_file(filename, my_context)
 
+def _do_file_wrapped(vargs): # note NO star for vargs!
+    return do_file(*vargs)  # note YES star for vargs!
 
 def do_dir(where, previous_context):
     return_to = getcwd()
@@ -194,6 +202,12 @@ def do_dir(where, previous_context):
             context['_output_dir'] = my_output_dir
 
     [do_file(filename, context) for filename in files_list]
+    ##############################
+    # MULTIPROCESSING: (TODO)
+    #     pool = Pool(5)
+    #     pool.map(_do_file_wrapped, [(filename, context) for filename in files_list])
+    ##############################
+
     # return to where we came from before leaving...
     # it's only polite.
     chdir(return_to)

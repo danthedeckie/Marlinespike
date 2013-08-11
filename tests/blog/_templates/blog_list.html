@@ -1,9 +1,9 @@
 <ul class="blog_list">
-{{#posts}}
-    <li><h3>{{title}}</h3>
-        <span class="date">{{ date }}</span>
-        {{{ body }}}
-        <a href="{{{ url }}}" class="{{{blog_more_class}}}">{{blog_more_text}}</a>
+{% for p in posts %}
+    <li><h3>{{p.title}}</h3>
+        <span class="date">{{ p.date }}</span>
+        {{ p.body }}
+        <a href="{{ p.url }}" class="{{ p.blog_more_class }}">{{ p.blog_more_text }}</a>
     </li>
-{{/posts}}
+{% endfor %}
 </ul>

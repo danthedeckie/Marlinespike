@@ -2,11 +2,11 @@
 { "template" : "basic" }
 ---
 <div id="content">
-    {{{ body }}}
+    {{ body }}
 </div>
 
 <div id="side_images">
-    {{#side_images}}
-        {{name}} - {{url}}
-    {{/side_images}}
+    {% for i in side_images %}
+        {{i.name}} - {{i.url}}
+    {% endfor %}
 </div>

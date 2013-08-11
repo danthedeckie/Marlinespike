@@ -4,14 +4,14 @@
 <body>
 <nav>
 <ul>
-{{#sections}}
-<li class="{{#current }}current{{/current}}"><a href="{{url}}">{{ title }}</a></li>
-{{/sections}}
+{% for s in sections %}
+<li class="{{ 'current' if s.current }}"><a href="{{s.url}}">{{ s.title }}</a></li>
+{% endfor %}
 </ul>
 </nav>
 title: {{title}}
 <article>
-{{{ body }}}
+{{ body }}
 </article>
 </body>
 </html>

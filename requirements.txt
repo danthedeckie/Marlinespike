@@ -1,6 +1,4 @@
-pystache
 markdown2
 pyscss
 PyYAML
-
-
+jinja2

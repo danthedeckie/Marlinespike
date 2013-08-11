@@ -21,12 +21,12 @@
 
 
 ###########
-# For pystache/markdown files:
+# For jinja2/markdown files:
 ###########
 
 import os.path
 import re
-import pystache
+from jinja2 import Template, FileSystemLoader, Environment
 import markdown2
 from HTMLParser import HTMLParser
 
@@ -59,9 +59,6 @@ class TagPluginParser(HTMLParser):
         self.attributes = {k:v for k,v in attrs}
 
 
-#TODO: This isn't needed any more?
-# _markdown_renderer = pystache.Renderer()
-
 # Here the already-loaded templates are cached.  When you '_get_template', it checks
 # here first.
 
@@ -72,25 +69,27 @@ def _get_template(name, context):
     if name == None:
         # if no template selected, return an empty one (rather than crashing)
         logging.info('Using blank/no template for {0}'.format( context['_output_basename']))
-        return '{{{ body }}}'
+        return '{{ body }}'
 
     inputfile = os.path.join(context['_template_dir'], name + context['_template_extn'])
+
+    loader = FileSystemLoader(context['_template_dir'])
+    environment = Environment(loader=loader)
+
+    # TODO: caching stuff...
+    #cache = FileSystemBytecodeCache(context[
 
     if inputfile in _markdown_templates:
         return _markdown_templates[inputfile]
     else:
-        if os.path.isfile(inputfile):
-            new_template, template_metadata = readfile_with_json_or_yaml_header(inputfile)
-
-            if 'template' in template_metadata:
-                replace_string = template_metadata.get('template_replace', '{{{ body }}}')
-                parent_template = _get_template(template_metadata['template'], context)
-                new_template = parent_template.replace(replace_string, \
-                                                       new_template)
+        try:
+            new_template = environment.get_template(name + context['_template_extn'])
             _markdown_templates[inputfile] = new_template
+
             return new_template
-        else:
-            raise IOError('template "' + inputfile + '" not found.')
+        except Exception as e:
+            raise e
+            raise IOError('template "' + inputfile + '" not found, or invalid.')
 
 _markdown_tag_plugins = []
 _post_markdown_plugins = {}
@@ -127,7 +126,13 @@ class markdown(CargoHandler):
                 # adds the context:
                 parser.attributes['context'] = context
                 # sends it all to the handler:
-                return tag_plugin.handle_function(**parser.attributes)
+                try:
+                    return tag_plugin.handle_function(**parser.attributes)
+                except Exception as e:
+                    logging.error('Error with tag plugin! (' + tag_plugin.tag + ')')
+                    logging.error(e.message)
+                    # TODO - catch and report better.
+                    raise e
 
             text_in_process = re.sub(tag_plugin.regex, process, text_in_process)
 
@@ -186,5 +191,5 @@ class markdown(CargoHandler):
         # And write the file:
 
         with open(outputfile, 'w') as f:
-            f.write(pystache.render(_get_template(my_context.get('template', None), my_context), \
-                                    my_context))
+            template = _get_template(my_context.get('template', None), my_context)
+            f.write( template.render( my_context))
