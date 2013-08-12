@@ -49,7 +49,7 @@ import os
 from urllib import quote
 import logging
 
-from lib.DictLiteStore import DictLiteStore
+from lib.DictLiteStore import DictLiteStore, NoJSON
 
 log = logging.getLogger(__file__)
 ####################################################
@@ -68,6 +68,12 @@ def date_from_file(filename, timeformat='%Y%m%d'):
     except:
         return gmtime(os.path.getmtime(filename))
 
+
+def searchable_tags(inlist):
+    ''' takes a list of strings, and returns a list of strings, but each
+        is hashed, and surrounded by '_', thus making SQL:
+        LIKE %_x_% possible & easy. '''
+    return ['_' + str(hash(x)) + '_' for x in inlist]
 
 def context_to_blogcache(context):
     ''' takes a full context dict, and returns a simpler
@@ -95,6 +101,7 @@ def context_to_blogcache(context):
         'title': context.get('title',''),
         'description': context.get('description',''),
         'tags': context.get('tags',[]),
+        'searchable_tags': searchable_tags(context.get('tags',[])),
         'category': context.get('category',''),
         'filename': context['_output_basename'] + context['_template_extn'],
         'blog_more_text': context.get('_blog_more_text','...'),
@@ -128,7 +135,6 @@ def blog_page(context):
     cachedb = os.path.join(context['_cache_dir'],'blog.db')
     key = "_original_inputfile"
     wherekey = (key,'==', context[key])
-
     # check if there already is an up-to-date cachefile, 
     # if so, don't bother updating it.
     with DictLiteStore(cachedb, 'pages') as s:
@@ -144,21 +150,30 @@ def blog_page(context):
         s.update(context_to_blogcache(context), True, wherekey)
 
 
-def blog_listing(path="blog", template=None, order=(('_sortable_date',u'DESC'),), limit=None, context=None, **kwargs):
+def blog_listing(path="blog", template=None, order=(('_sortable_date',u'DESC'),), limit=None, tags='', context=None, **kwargs):
     """
     This is what actually displays the shortened list of blogposts.  You should
-    specify a template.  This is used by putting a <% blog_listing template="blah" %>
-    tag plugin wherever you want it.  As well as the expected fields (title, body, date)
-    there will also be a 'url' field, which gives a relative link from the current
-    page to the blogpost.
+    specify a template.  This is used by putting a
+    <% blog_listing template="blah" %>
+    tag plugin wherever you want it.  As well as the expected fields (title,
+    body, date) there will also be a 'url' field, which gives a relative link
+    from the current page to the blogpost.
     """
     posts_context = {'posts': []}
-    cachedb = os.path.join(context['_cache_dir'],'blog.db')
+    cachedb = os.path.join(context['_cache_dir'], 'blog.db')
 
     log.info("reading from: %s",cachedb)
 
+    tag_filters = []
+
+
+    for t in searchable_tags(tags.split(',')):
+        tag_filters.append( ('searchable_tags','LIKE', NoJSON('%' + t + '%')))
+
+    print tag_filters
+
     with DictLiteStore(cachedb, 'pages') as s:
-        posts_context['posts'] = s.get(order=order) # TODO: filtering?
+        posts_context['posts'] = s.get(*tag_filters, order=order) # TODO: filtering?
 
 
     # makes a relative url from the current path to another output file:

@@ -168,9 +168,12 @@ class markdown(CargoHandler):
         # Load metadata - this is messy to cope with [items,with,lists]
         # TODO: remove this and recommend JSON metadata?
         for key, val in m.metadata.iteritems():
-            my_context[key] = \
-                    [{'item':x.strip()} for x in val[1:-1].split(',')] \
-                if val.startswith('[') else val
+            if isinstance(val, list):
+                my_context[key] = val
+            else:
+                my_context[key] = \
+                        [{'item':x.strip()} for x in val[1:-1].split(',')] \
+                    if val.startswith('[') else val
 
         # Sections:
         # Should this be 'plugin'd out? TODO

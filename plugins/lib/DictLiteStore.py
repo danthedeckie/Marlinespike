@@ -79,6 +79,17 @@ def cleanq(unclean):
     return u'"' + unicode(unclean.replace('"','""')) + u'"'
 
 
+class NoJSON(unicode):
+    ''' a string type, which should *not* be json dumped.  *Very* useful
+        for queries '''
+    pass
+
+def json_or_raw(text):
+    if isinstance(text, NoJSON):
+        return text
+    else:
+        return json.dumps(text)
+
 class DictLiteStore(object):
 
     def __init__(self, db_name=":memory:", table_name=u"def"):
@@ -242,7 +253,10 @@ class DictLiteStore(object):
             if not operator in _where_operators:
                 raise KeyError, 'Invalid operator ({0})'.format(operator)
             where_clauses.append(u' '.join([cleanq(col), unicode(operator), u'(?)']))
-            sql_values.append(json.dumps(value))
+            if isinstance(value, NoJSON):
+                sql_values.append(value)
+            else:
+                sql_values.append(json.dumps(value))
 
         return u'WHERE' + u' AND '.join(where_clauses), sql_values
 

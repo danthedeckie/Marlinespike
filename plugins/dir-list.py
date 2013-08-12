@@ -10,12 +10,21 @@
 import os.path
 from glob import glob
 
-def dir_pages(where=".", files="*.markdown", html='', **kwargs):
-    text = ""
+from marlinespike.cargo.markdown_handler import _get_template
+
+def dir_pages(where=".", files="*.markdown", template='', context=None, **kwargs):
+    renderer = _get_template(template, context)
+
+    files = []
+
     for page in glob(os.path.join(where,files)):
         name, a = os.path.splitext(os.path.basename(page))
-        text += html.format(url=page.replace(".markdown",".html"), name=name)
-    return text
+        files.append( {
+            'name': name,
+            'url': page.replace(".markdown",".html")
+            })
+    print files
+    return renderer.render({'files':files})
 
 _tag_plugins = {'dir': dir_pages}
 
