@@ -26,6 +26,7 @@ import commands
 import logging
 import json
 import yaml
+import copy
 
 # TODO: sort this out.  I'm sure there is a better way to use this module.
 #logging.basicConfig(level=logging.DEBUG)
@@ -180,3 +181,87 @@ def readfile_with_json_or_yaml_header(inputfile):
                 context.datatype = 'No JSON or YAML'
                 content = header + content
     return (content, context)
+
+def dictmerge(basedict, additions_dict):
+    ''' create a new Dict by copy/merging an old one with a new one.
+        WITH THIS ADDITION:
+        any keys in the new dict with '+' or '-' at the end of them are treated
+        as append/remove commands (particually for values which are lists)
+
+        >>> dictmerge({'a':[1,21]},{'a+':[42], 'a-':[1],'b':'hi'})
+        {'a':[21,42],'b':'hi'}
+
+        and likewise for a-. '''
+
+        # TODO!
+    new_dict = copy.deepcopy(basedict)
+
+    for key, val in additions_dict.items():
+        if key.endswith('+'):
+            realkey = key[:-1]
+            # ADD items:
+            if not realkey in new_dict:
+                # This is entirely new:
+                new_dict[realkey] = val
+            elif isinstance(new_dict[realkey], list):
+                # We're appending to a list.
+                if isinstance(val, list):
+                    new_dict[realkey] += val
+                else:
+                    new_dict[realkey].append(val)
+            elif isinstance(new_dict[realkey], dict):
+                # We're appending to a dict:
+                if isinstance(val, dict):
+                    new_dict[realkey].update(val)
+                else:
+                    raise KeyError('Invalid type for dictmerge:' +
+                                   key + ',' + val + ',' + new_dict[realkey])
+            else:
+                # OK, just add it.
+                try:
+                    # first try simple add:
+                    new_dict[realkey] += val
+                except TypeError:
+                    # ok, then try forcing the type:
+                    try:
+                        new_dict[realkey] += type(new_dict[realkey])(val)
+                    except:
+                        raise TypeError('"{}" cannot add {}{} to {}{}'.format(
+                            realkey, val, type(val),
+                            new_dict[realkey], type(new_dict[realkey]),
+                            ))
+
+        elif key.endswith('-'):
+            realkey = key[:-1]
+            # REMOVE items;
+
+            if not realkey in new_dict:
+                # It's already not here!
+                pass
+            elif isinstance(new_dict[realkey], list):
+                # Remove from a list:
+                if isinstance(val, list):
+                    [new_dict[realkey].remove(v) for v in val]
+                else:
+                    new_dict[realkey].remove(v)
+            elif isinstance(new_dict[realkey], dict):
+                # Remove from a dict:
+                if isinstance(val, dict):
+                    # remove a dict specifying keys?
+                    # TODO
+                    print 'Trying to remove: ', key, ' from ', new_dict
+                    raise TypeError('remove-by-dict not implemented. Sorry!')
+                elif isinstance(val, list):
+                    # remove a list of keys - don't fail if non-existant
+                    [new_dict[realkey].pop(k, None) for k in val]
+                else:
+                    # remove a single key
+                    new_dict[realkey].pop(val, None)
+            else:
+                # Remove whole value.
+                new_dict.remove(realkey)
+        else:
+            # Normal key.  Replace.
+            new_dict[key] = val
+
+    return new_dict
