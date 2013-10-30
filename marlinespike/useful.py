@@ -243,7 +243,7 @@ def dictmerge(basedict, additions_dict):
                 if isinstance(val, list):
                     [new_dict[realkey].remove(v) for v in val]
                 else:
-                    new_dict[realkey].remove(v)
+                    new_dict[realkey].remove(val)
             elif isinstance(new_dict[realkey], dict):
                 # Remove from a dict:
                 if isinstance(val, dict):
@@ -257,9 +257,20 @@ def dictmerge(basedict, additions_dict):
                 else:
                     # remove a single key
                     new_dict[realkey].pop(val, None)
+            elif isinstance(new_dict[realkey], str):
+                if val == '__pop__':
+                    new_dict.pop(realkey, None)
+                else:
+                    new_dict[realkey] = new_dict[realkey].replace(val,'')
             else:
-                # Remove whole value.
-                new_dict.remove(realkey)
+                try:
+                    # does a type-coerced subtraction work?
+                    new_dict[realkey] -= type(new_dict[realkey])(val)
+                except ValueError as err:
+                    raise TypeError('"{}" cannot remove {}{} from {}{}'.format(
+                        realkey, val, type(val),
+                        new_dict[realkey], type(new_dict[realkey])
+                        ))
         else:
             # Normal key.  Replace.
             new_dict[key] = val

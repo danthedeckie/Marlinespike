@@ -1,5 +1,5 @@
 '''
-Unit Tests for marlinespike.useful,dictmerge
+Unit Tests for marlinespike.useful.dictmerge
 
 
 '''
@@ -102,6 +102,48 @@ class TestAdd(DMTest):
 
     def test_dictadd(self):
         # add a dict to a dict:
+        self.shouldbe['images']['C'] = 'potato'
+
+        self.compareDM({'images+':{'C':'potato'}})
+
+
+class TestSubtract(DMTest):
+
+    def test_listsubtract(self):
+        self.shouldbe['tags'] = ['cool']
+
+        # Single subtractition:
+        self.compareDM({'tags-':'stuff'})
+
+        # Single list-type subtractition:
+        self.compareDM({'tags-':['stuff']})
+
+
+    def test_pop(self):
+        self.shouldbe.pop('name')
+        self.compareDM({'name-':  '__pop__'})
+
+    def test_strsubtract(self):
+        self.shouldbe['name'] = 'PA'
+
+        # String subtraction:
+        self.compareDM({'name-':'GE'})
+
+    def test_numsubtract(self):
+        # Add num to num:
+        self.shouldbe['weight'] = 32
+
+        self.compareDM({'weight-': 10})
+
+        # Remove str from num:
+        self.compareDM({'weight-': '10'})
+
+        # Fail!
+        with self.assertRaises(TypeError):
+            self.compareDM({'weight-':'Not a Number'})
+
+    def test_dictsubtract(self):
+        # subtract a dict from a  dict:
         self.shouldbe['images']['C'] = 'potato'
 
         self.compareDM({'images+':{'C':'potato'}})
