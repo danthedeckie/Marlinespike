@@ -144,6 +144,10 @@ class TestSubtract(DMTest):
 
     def test_dictsubtract(self):
         # subtract a dict from a  dict:
-        self.shouldbe['images']['C'] = 'potato'
+        self.shouldbe['images'].pop('C')
 
-        self.compareDM({'images+':{'C':'potato'}})
+        self.compareDM({'images-':{'C':'__pop__'}})
+
+class TestMerge(DMTest):
+    # TODO
+    pass

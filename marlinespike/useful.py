@@ -235,16 +235,21 @@ def dictmerge(basedict, additions_dict):
             realkey = key[:-1]
             # REMOVE items;
 
-            if not realkey in new_dict:
-                # It's already not here!
-                pass
-            elif isinstance(new_dict[realkey], list):
+            try:
+                oldvalue = new_dict[realkey] #should this be further up?
+                # and should we only work with oldvalue, then update the
+                # new_dict[realkey] at the end?
+            except KeyError:
+                # it's already not here, :-)
+                continue
+
+            if isinstance(oldvalue, list):
                 # Remove from a list:
                 if isinstance(val, list):
                     [new_dict[realkey].remove(v) for v in val]
                 else:
                     new_dict[realkey].remove(val)
-            elif isinstance(new_dict[realkey], dict):
+            elif isinstance(oldvalue, dict):
                 # Remove from a dict:
                 if isinstance(val, dict):
                     # remove a dict specifying keys?
@@ -257,20 +262,23 @@ def dictmerge(basedict, additions_dict):
                 else:
                     # remove a single key
                     new_dict[realkey].pop(val, None)
-            elif isinstance(new_dict[realkey], str):
+            elif isinstance(oldvalue, str): #TODO test unicode
                 if val == '__pop__':
                     new_dict.pop(realkey, None)
                 else:
-                    new_dict[realkey] = new_dict[realkey].replace(val,'')
+                    new_dict[realkey] = oldvalue.replace(val,'')
             else:
                 try:
                     # does a type-coerced subtraction work?
-                    new_dict[realkey] -= type(new_dict[realkey])(val)
+                    new_dict[realkey] -= type(oldvalue)(val)
                 except ValueError as err:
                     raise TypeError('"{}" cannot remove {}{} from {}{}'.format(
                         realkey, val, type(val),
-                        new_dict[realkey], type(new_dict[realkey])
+                        oldvalue, type(oldvalue)
                         ))
+        elif key.endswith('~'):
+            # TODO MERGE!
+            pass
         else:
             # Normal key.  Replace.
             new_dict[key] = val
