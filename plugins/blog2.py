@@ -170,11 +170,8 @@ def blog_listing(path="blog", template=None, order=(('_sortable_date',u'DESC'),)
     for t in searchable_tags(tags.split(',')):
         tag_filters.append( ('searchable_tags','LIKE', NoJSON('%' + t + '%')))
 
-    print tag_filters
-
     with DictLiteStore(cachedb, 'pages') as s:
         posts_context['posts'] = s.get(*tag_filters, order=order) # TODO: filtering?
-
 
     # makes a relative url from the current path to another output file:
     make_url = lambda p: quote(os.path.relpath(p, context['_output_dir']))

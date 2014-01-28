@@ -156,7 +156,7 @@ class markdown(CargoHandler):
         text, metadata = readfile_with_json_or_yaml_header(inputfile)
 
         # So we don't polute our mutable friend:
-        my_context = dict(context.items() + metadata.items())
+        my_context = dictmerge(context, metadata)
 
         m = markdown2.markdown(self._do_markdown_tag_plugins(text, my_context), \
                                extras=['metadata'], link_patterns=link_patterns)

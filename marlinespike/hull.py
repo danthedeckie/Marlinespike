@@ -103,7 +103,7 @@ def do_config(where, previous_context):
 
     with open(previous_context['_configfile_name']) as f:
         try:
-            return dict(copy.deepcopy(previous_context).items() + json.load(f).items())
+            return dictmerge(previous_context, json.load(f))
         except Exception as e:
             logging.error('Bad JSON in file:' + previous_context['_configfile_name'])
             logging.error(str(e.message))

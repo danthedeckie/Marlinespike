@@ -70,8 +70,10 @@ class image_magick(ExternalHandler):
             elif os.path.isfile(outputfile):
                 # TODO - caching and mtime testing, etc.
                 continue
-            logging.info('Compressing ' + filename)
+            logging.info('Resizing ' + filename)
             external_hide_output('convert','-resize', conversion['resize'], filename, 
                 outputfile)
 
-_file_handlers = {'.jpg': image_magick()}
+cla = image_magick()
+
+_file_handlers = {'.jpg': cla, '.JPG': cla, '.png': cla }
