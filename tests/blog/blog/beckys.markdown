@@ -1,5 +1,5 @@
 ---
 date: 1988-09-21
-tags+: something
+tags+: [special, becky]
 ---
 This should have Becky's birthday as the date.

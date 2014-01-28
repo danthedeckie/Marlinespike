@@ -59,8 +59,8 @@ class TagPluginParser(HTMLParser):
         self.attributes = {k:v for k,v in attrs}
 
 
-# Here the already-loaded templates are cached.  When you '_get_template', it checks
-# here first.
+# Here the already-loaded templates are cached.  When you '_get_template',
+# it checks here first.
 
 _markdown_templates = {}
 
@@ -68,10 +68,13 @@ def _get_template(name, context):
 
     if name == None:
         # if no template selected, return an empty one (rather than crashing)
-        logging.info('Using blank/no template for {0}'.format( context['_output_basename']))
+        logging.info('Using blank/no template for {0}'.format(
+                context['_output_basename']))
+
         return '{{ body }}'
 
-    inputfile = os.path.join(context['_template_dir'], name + context['_template_extn'])
+    inputfile = os.path.join(context['_template_dir'],
+                             name + context['_template_extn'])
 
     loader = FileSystemLoader(context['_template_dir'])
     environment = Environment(loader=loader)
@@ -83,7 +86,8 @@ def _get_template(name, context):
         return _markdown_templates[inputfile]
     else:
         try:
-            new_template = environment.get_template(name + context['_template_extn'])
+            new_template = environment.get_template(name +
+                                                    context['_template_extn'])
             _markdown_templates[inputfile] = new_template
 
             return new_template

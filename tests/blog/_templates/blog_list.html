@@ -2,7 +2,10 @@
 {% for p in posts %}
     <li><h3>{{p.title}}</h3>
         <span class="date">{{ p.date }}</span>
-        <span class="tags">{{ '/'.join(p.tags) }}</span>
+        <ul class="tags">{% for t in p.tags %}
+        <li>{{t}}</li>
+        {% endfor %}
+        </ul>
         {{ p.body }}
         <a href="{{ p.url }}" class="{{ p.blog_more_class }}">{{ p.blog_more_text }}</a>
     </li>
