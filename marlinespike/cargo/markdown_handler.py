@@ -165,6 +165,11 @@ class markdown(CargoHandler):
         my_context['_original_inputfile'] = inputfile
         my_context['outputfile'] = self.make_outputfile_name(inputfile, context)
 
+        # Run the post_markdown plugins...
+        for plugin in my_context.get('plugins',[]):
+            if _post_markdown_plugins.has_key(plugin):
+                _post_markdown_plugins[plugin](my_context)
+
         # Sections:
         # Should this be 'plugin'd out? TODO
         # TODO? default _section?  or defined in _config.json? 
@@ -185,11 +190,8 @@ class markdown(CargoHandler):
 
         logging.info('Writing:' + inputfile)  
 
-        # Run the post_markdown plugins...
-        for plugin in context.get('plugins',[]):
-            if _post_markdown_plugins.has_key(plugin):
-                _post_markdown_plugins[plugin](context)
-
+        print context.keys()
+        
         # And once again, do a plugin loop. (This allows for plugins to 'delay'
         # until now, rather than at injest stage.)
 

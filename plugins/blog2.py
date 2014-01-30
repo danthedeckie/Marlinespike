@@ -49,9 +49,10 @@ import os
 from urllib import quote
 import logging
 
-from lib.DictLiteStore import DictLiteStore, NoJSON
+from dictlitestore import DictLiteStore, NoJSON
 
 log = logging.getLogger(__file__)
+__cachedb = ''
 ####################################################
 #
 # Functions used by the 'plugin functions' later:
@@ -75,10 +76,22 @@ def searchable_tags(inlist):
         LIKE %_x_% possible & easy. '''
     return ['_' + str(hash(x)) + '_' for x in inlist]
 
-def context_to_blogcache(context):
-    ''' takes a full context dict, and returns a simpler
-        dict with just the data we want to put in the blog cache. '''
+    
 
+###################################
+#
+# The actual plugin functions (entry points)
+#
+###################################
+
+def blog_page(context):
+    '''
+    This function gets called after a page has been rendered from markdown, if the
+    'blog' plugin is running (in the page's directory).
+    It injects a few extra fields into the context, which are useful for
+    queries, etc, later on.  Some of this may end up moving across to the
+    main markdown handler, later on...
+    '''
     # format they want the date to end up:
     blog_date_format = context.get('_blog_date_format','%Y-%m-%d')
 
@@ -96,59 +109,12 @@ def context_to_blogcache(context):
 
     date_str = strftime(blog_date_format, date)
 
-    full_body = context.get('body','')
-    return {
-        'title': context.get('title',''),
-        'description': context.get('description',''),
-        'tags': context.get('tags',[]),
-        'searchable_tags': searchable_tags(context.get('tags',[])),
-        'category': context.get('category',''),
-        'filename': context['_output_basename'] + context['_template_extn'],
-        'blog_more_text': context.get('_blog_more_text','...'),
-        'blog_more_class': context.get('_blog_more_class','blog_more'),
-        'body': full_body[0:full_body.find('<!-- MORE -->')],
-        'date': date_str,
-        '_year': date.tm_year,
-        '_month': date.tm_mon,
-        '_day': date.tm_mday,
-        '_sortable_date': strftime('%Y%m%d', date),
-        'filemtime': os.path.getmtime(context['_original_inputfile']),
-        '_original_inputfile': context['_original_inputfile'],
-        }
-
-
-###################################
-#
-# The actual plugin functions (entry points)
-#
-###################################
-
-def blog_page(context):
-    '''
-    This function gets called after a page has been rendered from markdown, if the
-    'blog' plugin is running (in the page's directory).
-    It dumps the appropriate info into the '_cache/blog.db'
-    Later on, once we actually want a list (say)
-    of all the files, we can read the data from these dumps really quickly.
-    '''
-    # file to dump the cache into:
-    cachedb = os.path.join(context['_cache_dir'],'blog.db')
-    key = "_original_inputfile"
-    wherekey = (key,'==', context[key])
-    # check if there already is an up-to-date cachefile, 
-    # if so, don't bother updating it.
-    with DictLiteStore(cachedb, 'pages') as s:
-        c = s.get(wherekey)
-
-        if c != [] and c[0]['filemtime'] \
-        > os.path.getmtime(context[key]):
-            log.debug('%s already in cache!', key)
-            return True
-
-        log.debug ('%s not in cache, or needs to be updated.', key)
-        #If we got here, then the cache needs updating.
-        s.update(context_to_blogcache(context), True, wherekey)
-
+    context['_before_more'] = context['body'].find('<!-- MORE -->')
+    context['date'] = date_str
+    context['_year'] = date.tm_year
+    context['_month'] = date.tm_mon
+    context['_day'] = date.tm_mday
+    context['_sortable_date'] = strftime('%Y%m%d', date)
 
 def blog_listing(path="blog",
                  template=None,
@@ -164,28 +130,32 @@ def blog_listing(path="blog",
     body, date) there will also be a 'url' field, which gives a relative link
     from the current page to the blogpost.
     """
+    global __cachedb
+
     if not context['_passno'] == 1:
         raise DeferPlugin()
 
     posts_context = {'posts': []}
-    cachedb = os.path.join(context['_cache_dir'], 'blog.db')
 
-    log.info("reading from: %s",cachedb)
+    __cachedb = os.path.join(context['_cache_dir'], 'main.db')
+
+    log.info("reading from: %s",__cachedb)
 
     tag_filters = []
 
     for t in searchable_tags(tags.split(',')):
-        tag_filters.append( ('searchable_tags','LIKE', NoJSON('%' + t + '%')))
+        tag_filters.append( ('_searchable_tags','LIKE', NoJSON('%' + t + '%')))
 
-    with DictLiteStore(cachedb, 'pages') as s:
+    with DictLiteStore(__cachedb, 'pages') as s:
         posts_context['posts'] = s.get(*tag_filters, order=order) # TODO: filtering?
+        log.info('%i posts', len(posts_context['posts']))
 
     # makes a relative url from the current path to another output file:
     make_url = lambda p: quote(os.path.relpath(p, context['_output_dir']))
 
     # now do it for all posts:
     for post in posts_context['posts']:
-        post['url'] = make_url(post['filename'])
+        post['url'] = make_url(post['_output_basename'] + post['_template_extn'])
 
     # add the general context:
     posts_context.update(context)
@@ -194,6 +164,11 @@ def blog_listing(path="blog",
     templ = _get_template(template, posts_context)
     return templ.render(posts_context)
 
+def jinja_blogposts(*query):
+    with DictLiteStore(__cachedb,'pages') as store:
+        return store.get(*query)
 
-_tag_plugins = { 'blog_listing': blog_listing }
+
+_tag_plugins = {'blog_listing': blog_listing }
 _post_plugins = {'blog_dir' : blog_page}
+_context = {'post_query' : jinja_blogposts}

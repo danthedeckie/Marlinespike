@@ -24,5 +24,10 @@
 </article>
 <aside>
 {{ aside }}
+<ul>
+{% for post in post_query() %}
+    <li>{{ post.title }}</li>
+{% endfor %}
+</ul>
 </aside>
 </body>

@@ -144,7 +144,8 @@ def do_file(filename, context, store, passno=0):
         if hasattr(handler, 'scan_file'):
             read_data = safedict(handler.scan_file(filename, my_context))
             # and add searchable tags...
-            read_data['_searchable_tags'] = searchable_tags(read_data.get('tags',[]))
+            read_data['_searchable_tags'] = \
+                searchable_tags(read_data.get('tags', []))
             store.update(read_data, True, db_key)
 
     elif passno == 1:
@@ -152,11 +153,11 @@ def do_file(filename, context, store, passno=0):
             # cache'd write disabled, so that 'related items', etc get updated.
             #if not '_written' in cache[0]:
             if len(cache) == 0:
-                logging.warn( 'No cache... %s',   os.path.join(getcwd(), filename))
                 handler.process_file(filename, my_context)
             else:
-                cache[0]['_passno'] = 1
-                handler.process_cache(filename, cache[0])
+                my_context.update(cache[0])
+                my_context['_passno'] = 1
+                handler.process_cache(filename, my_context)
             #    cache[0]['_written'] = 'yes'
             #store.update(cache[0], True, ('_input_filename', '==', filename))
         else:
@@ -223,7 +224,7 @@ def do_dir(where, previous_context, passno=0):
         os.makedirs(context['_output_dir'])
 
     files_list = []
-    for filename in filter(lambda x: exclude_test(x, _HIDE_ME_PREFIX), listdir('.')):
+    for filename in [x for x in listdir('.') if exclude_test(x, _HIDE_ME_PREFIX)]:
 
         # Do files after subdirectories...
         if os.path.isfile(filename):
@@ -240,7 +241,7 @@ def do_dir(where, previous_context, passno=0):
             context['_parent_output_dir'] = my_parent_output_dir
             context['_output_dir'] = my_output_dir
 
-    with DictLiteStore(os.path.join(context['_cache_dir'], 'main.db')) as store:
+    with DictLiteStore(os.path.join(context['_cache_dir'], 'main.db'),'pages') as store:
         [do_file(filename, context, store, passno) for filename in files_list]
 
     ##############################
