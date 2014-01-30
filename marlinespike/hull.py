@@ -120,8 +120,12 @@ def do_file(filename, context, store, passno=0):
     # break everything else:
     my_context = copy.deepcopy(context)
 
+    _full_path = os.path.join(getcwd(), filename)
+    db_key = ('_full_input_filename','==', _full_path)
+
     # some file-specific settings:
     my_context['_input_filename'] = filename
+    my_context['_full_input_filename'] = _full_path
     my_context['_mtime'] = stat(filename).st_mtime
     
     my_context['_output_basename'] = os.path.join(context['_output_dir'], root)
@@ -130,9 +134,8 @@ def do_file(filename, context, store, passno=0):
     # select the appropriate handler, and run with it:
     handlers = my_context['_file_handlers']
     handler = handlers[endswithwhich(filename, handlers.keys())]
-    
-    cache = store.get(('_input_filename', '==', filename),
-                      ('_mtime','==', my_context['_mtime']))
+   
+    cache = store.get(db_key, ('_mtime','==', my_context['_mtime']))
 
     # if new style caching handler:
     if passno == 0:
@@ -141,17 +144,19 @@ def do_file(filename, context, store, passno=0):
         if hasattr(handler, 'scan_file'):
             read_data = safedict(handler.scan_file(filename, my_context))
             # and add searchable tags...
-            read_data['_searchable_tags'] = searchable_tags(read_data['tags'])
-            if 'body' in read_data:
-                print 'has body!'
-            store.update(read_data, True, ('_input_filename', '==', filename))
+            read_data['_searchable_tags'] = searchable_tags(read_data.get('tags',[]))
+            store.update(read_data, True, db_key)
 
     elif passno == 1:
         if hasattr(handler, 'process_cache'):
             # cache'd write disabled, so that 'related items', etc get updated.
             #if not '_written' in cache[0]:
-            cache[0]['_passno'] = 1
-            handler.process_cache(filename, cache[0])
+            if len(cache) == 0:
+                logging.warn( 'No cache... %s',   os.path.join(getcwd(), filename))
+                handler.process_file(filename, my_context)
+            else:
+                cache[0]['_passno'] = 1
+                handler.process_cache(filename, cache[0])
             #    cache[0]['_written'] = 'yes'
             #store.update(cache[0], True, ('_input_filename', '==', filename))
         else:
