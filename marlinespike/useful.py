@@ -284,3 +284,35 @@ def dictmerge(basedict, additions_dict):
             new_dict[key] = val
 
     return new_dict
+
+
+def safedict(data):
+    ''' recursively search through a dict/list tree, and remove elements which
+        aren't easily JSONable. '''
+    if type(data) is dict:
+        for k, v in data.items():
+            if type(k) not in (str, unicode):
+                del data[k]
+                continue
+            if type(v) not in (str, unicode, dict, list, int, float):
+                try:
+                    data[k] = unicode(v)
+                except:
+                    del data[k]
+                continue
+
+            if type(v) in (dict, list):
+                data[k] = safedict(v)
+
+    elif type(data) is list:
+        for i in data:
+            if type(i) not in (str, unicode, dict, list, int, float):
+                data.remove(i)
+
+    return data
+
+def searchable_tags(inlist):
+    ''' takes a list of strings, and returns a list of strings, but each
+        is hashed, and surrounded by '_', thus making SQL:
+        LIKE %_x_% possible & easy. '''
+    return ['_' + str(hash(x)) + '_' for x in inlist]

@@ -2,9 +2,27 @@
 <html>
 <head>
     <title>{{title}}</title>
+    <style>
+    article {
+        width: 80%;
+        float: left;
+        display: block;
+        }
+    aside {
+        width: 14%
+        float: left;
+        display: block;
+        border: 1px solid black;
+    }
+    </style>
 </head>
 <body>
+<article>
 {% block body %}
 {{ body }}
 {% endblock %}
+</article>
+<aside>
+{{ aside }}
+</aside>
 </body>

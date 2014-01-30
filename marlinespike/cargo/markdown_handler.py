@@ -29,6 +29,7 @@ import re
 from jinja2 import Template, FileSystemLoader, Environment
 import markdown2
 from HTMLParser import HTMLParser
+from bs4 import BeautifulSoup
 
 from marlinespike.cargo import CargoHandler
 from marlinespike.useful import *
@@ -98,14 +99,28 @@ def _get_template(name, context):
 _markdown_tag_plugins = []
 _post_markdown_plugins = {}
 
-def _make_tag_regex(tag):
-    return re.compile("<%\s*" + tag + "(.*?)%>")
-
 class MarkdownTagPlugin(object):
     def __init__(self, tag, function):
         self.handle_function = function
         self.tag = tag
-        self.regex = _make_tag_regex(tag)
+
+class DeferPlugin(Exception):
+    ''' simple exception, used to say 'please run this plugin later... '''
+    pass
+
+def _do_markdown_tag_plugins(body, context):
+    soup = BeautifulSoup(body)
+    for tag in soup.findAll('plugin'):
+        for p in _markdown_tag_plugins:
+            if tag['name'] == p.tag:
+                tag.attrs['context'] = context
+                try:
+                    tag.replace_with(BeautifulSoup(p.handle_function(**tag.attrs)))
+                except DeferPlugin as e:
+                    break
+                break
+
+    return unicode(soup)
 
 class markdown(CargoHandler):
     def make_outputfile_name(self, inputfile, context):
@@ -117,33 +132,10 @@ class markdown(CargoHandler):
     def register_tag_plugin(self, tag, func):
         _markdown_tag_plugins.append(MarkdownTagPlugin(tag, func))
 
-    def _do_markdown_tag_plugins(self, text, context):
-        text_in_process = text
-        for tag_plugin in _markdown_tag_plugins:
-            def process (tag_data):
-                # the re.sub function sends us a weird object. we only need
-                # the internal text bit:
-                tag_internal_text = tag_data.groups()[0].__str__()
-                # takes the x="blah" bit of a tag, compiles it to a dict:
-                parser = TagPluginParser()
-                parser.feed('<PLUGIN ' + tag_internal_text + ' />')
-                # adds the context:
-                parser.attributes['context'] = context
-                # sends it all to the handler:
-                try:
-                    return tag_plugin.handle_function(**parser.attributes)
-                except Exception as e:
-                    logging.error('Error with tag plugin! (' + tag_plugin.tag + ')')
-                    logging.error(e.message)
-                    # TODO - catch and report better.
-                    raise e
+    def scan_file(self, inputfile, context):
+        """ On the first pass, read all the data, return a dict for 
+            storing in the cache. """
 
-            text_in_process = re.sub(tag_plugin.regex, process, text_in_process)
-
-        return text_in_process
-
-    def process_file(self, inputfile, context):
-        outputfile = self.make_outputfile_name(inputfile, context)
 
         # TODO - somehow caching / mtime / something for templates
         #        and these files so they only update when needed.
@@ -155,48 +147,63 @@ class markdown(CargoHandler):
         #        and doesn't contain metadata such as filename, date,
         #        etc.
 
-        logging.info('Updating:' + inputfile)  
+        logging.info('Reading:' + inputfile)  
         # TODO - try/finally etc.
         text, metadata = readfile_with_json_or_yaml_header(inputfile)
 
         # So we don't polute our mutable friend:
         my_context = dictmerge(context, metadata)
 
-        m = markdown2.markdown(self._do_markdown_tag_plugins(text, my_context), \
+        # do the initial markdown -> html conversion
+
+        body = markdown2.markdown(_do_markdown_tag_plugins(text, context), \
                                extras=['metadata'], link_patterns=link_patterns)
 
-        # These before metadata, so they're overridable.
-        my_context['body'] = unicode(m)
-        my_context['_original_inputfile'] = inputfile
 
-        # Load metadata - this is messy to cope with [items,with,lists]
-        # TODO: remove this and recommend JSON metadata?
-        for key, val in m.metadata.iteritems():
-            if isinstance(val, list):
-                my_context[key] = val
-            else:
-                my_context[key] = \
-                        [{'item':x.strip()} for x in val[1:-1].split(',')] \
-                    if val.startswith('[') else val
+        # These before metadata, so they're overridable.
+        my_context['body'] = body
+        my_context['_original_inputfile'] = inputfile
+        my_context['outputfile'] = self.make_outputfile_name(inputfile, context)
 
         # Sections:
         # Should this be 'plugin'd out? TODO
         # TODO? default _section?  or defined in _config.json? 
-        my_section = my_context.get('section', my_context.get('default_section', None))
+        #my_section = my_context.get('section',
+        #                            my_context.get('default_section', None))
+        #
+        #if 'sections' in my_context:
+        #    my_section_dict = filter(lambda x: x.get('title', None) == my_section,
+        #                      my_context['sections'])
+        #    if my_section_dict:
+        #        my_section_dict[0]['current'] = True
 
-        if 'sections' in my_context:
-            my_section_dict = filter(lambda x: x.get('title',None) == my_section, my_context['sections'])
-            if my_section_dict:
-                my_section_dict[0]['current'] = True
+        return my_context
+
+    def process_cache(self, inputfile, context):
+        """ Now we actually should make the output file (this is the
+            second pass) ... """
+
+        logging.info('Writing:' + inputfile)  
 
         # Run the post_markdown plugins...
-
-        for plugin in my_context.get('plugins',[]):
+        for plugin in context.get('plugins',[]):
             if _post_markdown_plugins.has_key(plugin):
-                _post_markdown_plugins[plugin](my_context)
+                _post_markdown_plugins[plugin](context)
+
+        # And once again, do a plugin loop. (This allows for plugins to 'delay'
+        # until now, rather than at injest stage.)
+
+        context['body'] = _do_markdown_tag_plugins(context['body'], context)
 
         # And write the file:
 
-        with open(outputfile, 'w') as f:
-            template = _get_template(my_context.get('template', None), my_context)
-            f.write( template.render( my_context))
+        with open(context['outputfile'], 'w') as f:
+            template = _get_template(context.get('template', None),
+                                     context)
+
+            f.write(template.render(context))
+
+    def process_file(self, inputfile, context):
+        # old style...
+        self.process_cache(inputfile, self.scan_file(inputfile, context))
+

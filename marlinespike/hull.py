@@ -39,7 +39,7 @@ sys.setdefaultencoding('utf-8')  # - Oh for Py3k everywhere.
 
 
 # External Libs
-from os import chdir, listdir, getcwd
+from os import chdir, listdir, getcwd, stat
 import os.path
 import json
 from glob import glob
@@ -57,7 +57,10 @@ import traceback
 import marlinespike.cargo as cargo
 from marlinespike.cargo import *
 from marlinespike.cargo.markdown_handler import markdown
-from marlinespike.useful import endswithwhich, readfile_with_json_or_yaml_header, logging, exclude_test
+from marlinespike.useful import endswithwhich, readfile_with_json_or_yaml_header, logging, exclude_test, safedict, searchable_tags
+
+from dictlitestore import DictLiteStore, NoJSON
+
 
 ################################
 # Default Settings
@@ -86,7 +89,8 @@ _DEFAULT_CONFIG = {
              '_template_dir': os.path.join(getcwd(), _HIDE_ME_PREFIX + 'templates'),
             '_template_extn': '.html',
         '_parent_output_dir': getcwd(),
-                 '_base_dir': getcwd()
+                 '_base_dir': getcwd(),
+                   '_passno': 0,
         }
 
 
@@ -109,7 +113,7 @@ def do_config(where, previous_context):
             logging.error(str(e.message))
             exit(1)
 
-def do_file(filename, context):
+def do_file(filename, context, store, passno=0):
     root, ext = os.path.splitext(filename)
     # dicts are mutable in python.  Make a local copy for this
     # file, so that the handler can muck around with it and not
@@ -117,17 +121,46 @@ def do_file(filename, context):
     my_context = copy.deepcopy(context)
 
     # some file-specific settings:
+    my_context['_input_filename'] = filename
+    my_context['_mtime'] = stat(filename).st_mtime
+    
     my_context['_output_basename'] = os.path.join(context['_output_dir'], root)
     my_context['_input_extension'] = ext
 
     # select the appropriate handler, and run with it:
     handlers = my_context['_file_handlers']
-    handlers[endswithwhich(filename, handlers.keys())].process_file(filename, my_context)
+    handler = handlers[endswithwhich(filename, handlers.keys())]
+    
+    cache = store.get(('_input_filename', '==', filename),
+                      ('_mtime','==', my_context['_mtime']))
+
+    # if new style caching handler:
+    if passno == 0:
+        if cache != []:
+            return
+        if hasattr(handler, 'scan_file'):
+            read_data = safedict(handler.scan_file(filename, my_context))
+            # and add searchable tags...
+            read_data['_searchable_tags'] = searchable_tags(read_data['tags'])
+            if 'body' in read_data:
+                print 'has body!'
+            store.update(read_data, True, ('_input_filename', '==', filename))
+
+    elif passno == 1:
+        if hasattr(handler, 'process_cache'):
+            # cache'd write disabled, so that 'related items', etc get updated.
+            #if not '_written' in cache[0]:
+            cache[0]['_passno'] = 1
+            handler.process_cache(filename, cache[0])
+            #    cache[0]['_written'] = 'yes'
+            #store.update(cache[0], True, ('_input_filename', '==', filename))
+        else:
+            handler.process_file(filename, my_context)
 
 def _do_file_wrapped(vargs): # note NO star for vargs!
     return do_file(*vargs)  # note YES star for vargs!
 
-def do_dir(where, previous_context):
+def do_dir(where, previous_context, passno=0):
     return_to = getcwd()
     chdir(where)
     context = do_config(where, previous_context)
@@ -137,7 +170,8 @@ def do_dir(where, previous_context):
     else:
         context['_base_path'] += '../'
 
-    context['_output_dir'] = context.pop('_output_dir', os.path.join(context['_parent_output_dir'], where))
+    context['_output_dir'] = context.pop('_output_dir',
+                            os.path.join(context['_parent_output_dir'], where))
 
     if os.path.exists('_config.py'):
         sys.path.insert(0,os.getcwd())
@@ -154,6 +188,7 @@ def do_dir(where, previous_context):
             def do_plugin(filename):
                 #global context
                 x = __import__(filename, fromlist=True)
+
                 # Here is a list of plugins we import:
                 # TODO: functionise/DRY this:
                 if '_context' in dir(x):
@@ -166,7 +201,6 @@ def do_dir(where, previous_context):
                 if '_post_plugins' in dir(x):
                     [markdown_handler.register_post_plugin(tag, func) \
                         for tag, func in x._post_plugins.items()]
-
 
             execfile('_config.py')
         except Exception as e:
@@ -196,12 +230,14 @@ def do_dir(where, previous_context):
             my_parent_output_dir = context['_parent_output_dir']
             my_output_dir = context['_parent_output_dir'] = context.pop('_output_dir')
 
-            do_dir(filename, context)
+            do_dir(filename, context, passno)
 
             context['_parent_output_dir'] = my_parent_output_dir
             context['_output_dir'] = my_output_dir
 
-    [do_file(filename, context) for filename in files_list]
+    with DictLiteStore(os.path.join(context['_cache_dir'], 'main.db')) as store:
+        [do_file(filename, context, store, passno) for filename in files_list]
+
     ##############################
     # MULTIPROCESSING: (TODO)
     #     pool = Pool(5)
@@ -213,5 +249,9 @@ def do_dir(where, previous_context):
     chdir(return_to)
 
 if __name__ == '__main__':
-    do_dir(getcwd(), _DEFAULT_CONFIG)
+    print "Pass 1:"
+    do_dir(getcwd(), _DEFAULT_CONFIG, 0)
+    print "Pass 2:"
+    _DEFAULT_CONFIG['_passno'] = 1
+    do_dir(getcwd(), _DEFAULT_CONFIG, 1)
     print("Done.\n")

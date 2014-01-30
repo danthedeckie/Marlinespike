@@ -2,7 +2,7 @@
 
     This very simple plugin takes text:
 
-        <% accordion text="Hello World" %>
+        <plugin name="accordion" text="Hello World" \>
 
     and returns it as an "a" tag with the "acchead" class.
 
@@ -19,17 +19,17 @@
 
     The following markdown becomes a cool accordion:
 
-        - <% accordion text="More info" %>
+        - <plugin name="accordion" text="More info" \>
           + Item 1
           + Item 2
           + And so on.
-        - <% accordion text="Second accordion" %>
+        - <plugin name="accordion" text="Second accordion" \>
           + Here's the second lot
           + Of items
           + To be displayed
 
-    Which I think is quite cool.  You can see examples of this at
-    http://www.omnitube.org/
+    Which I think is pretty sweet, for such minimal markup.
+    You can see examples of this at http://omnivision.om.org/
 
     """
 

@@ -37,5 +37,9 @@ if os.sep+'marlinespike' in my_path:
 
 import marlinespike
 
-marlinespike.do_dir(os.getcwd(), marlinespike._DEFAULT_CONFIG)
+print ("First pass (scan files)")
+marlinespike.do_dir(os.getcwd(), marlinespike._DEFAULT_CONFIG, 0)
+print ("Second pass (output)")
+marlinespike._DEFAULT_CONFIG['_passno'] = 1
+marlinespike.do_dir(os.getcwd(), marlinespike._DEFAULT_CONFIG, 1)
 print("Done!\n")

@@ -19,7 +19,7 @@
 
     in the page where you want a list of all blog posts:
 
-        <% blog_listing template="templatename" %>
+        <plugin name="blog_listing" template="templatename" \>
 
     where you set templatename to whatever template you want to use for
     displaying posts in this page.  The template file can look something like:
@@ -33,7 +33,7 @@
 
     in a 'post' file, you can put a 'read more' marker:
 
-    <% more %>
+    <!-- MORE -->
 
     then posts displayed in a {% for post in posts %}
     block will cut off at that point.
@@ -41,7 +41,7 @@
 
 
 """
-from marlinespike.cargo.markdown_handler import _get_template
+from marlinespike.cargo.markdown_handler import _get_template, DeferPlugin
 
 from time import strptime, gmtime, strftime, mktime
 import datetime
@@ -106,7 +106,7 @@ def context_to_blogcache(context):
         'filename': context['_output_basename'] + context['_template_extn'],
         'blog_more_text': context.get('_blog_more_text','...'),
         'blog_more_class': context.get('_blog_more_class','blog_more'),
-        'body': full_body[0:full_body.find('<!-- _BLOG_MORE -->')],
+        'body': full_body[0:full_body.find('<!-- MORE -->')],
         'date': date_str,
         '_year': date.tm_year,
         '_month': date.tm_mon,
@@ -150,22 +150,29 @@ def blog_page(context):
         s.update(context_to_blogcache(context), True, wherekey)
 
 
-def blog_listing(path="blog", template=None, order=(('_sortable_date',u'DESC'),), limit=None, tags='', context=None, **kwargs):
+def blog_listing(path="blog",
+                 template=None,
+                 order=(('_sortable_date',u'DESC'),),
+                 limit=None,
+                 tags='',
+                 context=None, **kwargs):
     """
     This is what actually displays the shortened list of blogposts.  You should
     specify a template.  This is used by putting a
-    <% blog_listing template="blah" %>
+    <plugin name="blog_listing" template="blah" \>
     tag plugin wherever you want it.  As well as the expected fields (title,
     body, date) there will also be a 'url' field, which gives a relative link
     from the current page to the blogpost.
     """
+    if not context['_passno'] == 1:
+        raise DeferPlugin()
+
     posts_context = {'posts': []}
     cachedb = os.path.join(context['_cache_dir'], 'blog.db')
 
     log.info("reading from: %s",cachedb)
 
     tag_filters = []
-
 
     for t in searchable_tags(tags.split(',')):
         tag_filters.append( ('searchable_tags','LIKE', NoJSON('%' + t + '%')))
@@ -188,12 +195,5 @@ def blog_listing(path="blog", template=None, order=(('_sortable_date',u'DESC'),)
     return templ.render(posts_context)
 
 
-def blog_readmore(**kwargs):
-    ''' <% more %> is used to say that a blogpost should only continue on it's
-    'real' page, and not on listings. This works a little 'hackily' at the moment,
-    by using a magic <!-- comment --> tag, which isn't great, but works just fine. '''
-    return '<!-- _BLOG_MORE -->'
-
-_tag_plugins = {'more': blog_readmore,
-                'blog_listing': blog_listing }
+_tag_plugins = { 'blog_listing': blog_listing }
 _post_plugins = {'blog_dir' : blog_page}

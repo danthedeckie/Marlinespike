@@ -17,7 +17,7 @@ Here is a list of currently accepted hooks:
   for handling file types.
   check the plugins scss.py or yuic.py for details of how it actually looks.
 - *_tag_plugins* = {'tag_name': tag_func}
-  for <% blah options="here" %> type tags in your markdown files.
+  for `<plugin name="blah" options="here" \>` type tags in your markdown files.
 - *_post_plugins* = { 'plugin_name': func}
   which get run after processing the markdown file, but before writing it to disk.
   it will only happen *if* you also turn it on for that file (or for a bunch of files

@@ -6,12 +6,16 @@ title: Blog plugin test
 
 This is some normal test text.
 
+<plugin name="blog_listing" template="blog_list" tags="blog" />
+
+## end!
+
 # Here is a list of blog articles:
 
-<% blog_listing template="blog_list" tags='blog' %>
+<plugin name="blog_listing" template="blog_list" tags="blog" />
 
 # and a list of 'special' articles:
 
-<% blog_listing template="blog_list" tags='special' %>
+<plugin name="blog_listing" template="blog_list" tags="blog,special" />
 
 Which is quite cool.

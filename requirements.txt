@@ -2,3 +2,5 @@ markdown2
 pyscss
 PyYAML
 jinja2
+DictLiteStore
+beautifulsoup4
